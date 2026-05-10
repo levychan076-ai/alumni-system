@@ -99,8 +99,10 @@ def test_database():
         db.close()
         return True
     except Exception as e:
-        print(f"DEBUG - Database test failed: {e}")
-        return False
+        import traceback
+        print("ERROR in get_db():", str(e))
+        traceback.print_exc()
+        return None
 
 from functools import wraps
 from flask import redirect, session, request
@@ -451,7 +453,9 @@ def login_admin():
             return render_template("login_admin.html", error="Invalid username or password.")
 
         except Exception as e:
-            print(f"DEBUG - Database error: {e}")
+            import traceback
+            print("ERROR - Login failed:", str(e))
+            traceback.print_exc()
             return render_template("login_admin.html", error="Database error. Please try again.")
         finally:
             cursor.close()
@@ -485,7 +489,9 @@ def login_alumni():
             print(f"DEBUG - Database query result: {alumni_user}")
             
         except Exception as e:
-            print(f"DEBUG - Database error: {e}")
+            import traceback
+            print("ERROR - Alumni login failed:", str(e))
+            traceback.print_exc()
             alumni_user = None
         finally:
             cursor.close()
@@ -574,7 +580,9 @@ def login():
             return render_template("login.html", error="Invalid username or password.")
 
         except Exception as e:
-            print(f"DEBUG - Database error: {e}")
+            import traceback
+            print("ERROR - Original login failed:", str(e))
+            traceback.print_exc()
             return render_template("login.html", error="Database error. Please try again.")
         finally:
             cursor.close()
@@ -699,7 +707,9 @@ def dashboard():
         pending_requests = result['pending'] if result else 0
         
     except Exception as e:
-        print("Dashboard error:", e)
+        import traceback
+        print("ERROR - Dashboard error:", str(e))
+        traceback.print_exc()
         total_alumni = bsit_count = bsba_count = beed_count = 0
         employed = unemployed = self_employed = 0
         directly_related = 0
@@ -962,8 +972,10 @@ def add():
         return render_template("add.html", programs=programs, user_type=session.get("user_type"), now=datetime.now())
 
     except Exception as e:
+        import traceback
+        print("ERROR - Add alumni failed:", str(e))
+        traceback.print_exc()
         db.rollback()
-        print("ADD ERROR:", e)
         return render_template("add.html", programs=programs, error=str(e), user_type=session.get("user_type"), now=datetime.now())
 
     finally:
@@ -988,6 +1000,9 @@ def view_educ(alumni_id):
     """, (alumni_id,))
 
     educ = cursor.fetchall()
+
+    cursor.close()
+    db.close()
 
     return render_template(
         "educ.html",
@@ -1015,6 +1030,9 @@ def view_employ(alumni_id):
 
     employ = cursor.fetchall()
 
+    cursor.close()
+    db.close()
+
     return render_template(
         "employ.html",
         employ=employ,
@@ -1033,15 +1051,23 @@ def activity():
     db = get_db()
     cursor = db.cursor()
 
-    cursor.execute("""
-        SELECT username, user_type, activity, date_time
-        FROM activity_logs
-        ORDER BY date_time DESC
-    """)
-
-    logs = cursor.fetchall()
-    cursor.close()
-    db.close()
+    try:
+        cursor.execute("""
+            SELECT username, user_type, activity, date_time
+            FROM activity_logs
+            ORDER BY date_time DESC
+        """)
+        
+        logs = cursor.fetchall()
+        
+    except Exception as e:
+        import traceback
+        print("ERROR - Activity logs failed:", str(e))
+        traceback.print_exc()
+        logs = []
+    finally:
+        cursor.close()
+        db.close()
 
     return render_template(
         "activity.html",
@@ -1179,28 +1205,40 @@ def announcement():
         """)
         pending_requests = cursor.fetchall()
         
-        # Get approved history
-        cursor.execute("""
-            SELECT id, coordinator_id, subject, message, recipient_emails, status, created_at, approved_at, approved_by, admin_note
-            FROM announcement_requests
-            WHERE status = 'approved'
-            ORDER BY approved_at DESC
-            LIMIT 20
-        """)
-        approved_history = cursor.fetchall()
-        
-        # Get rejected history
-        cursor.execute("""
-            SELECT id, coordinator_id, subject, message, recipient_emails, status, created_at, approved_at, approved_by, admin_note
-            FROM announcement_requests
-            WHERE status = 'rejected'
-            ORDER BY approved_at DESC
-            LIMIT 20
-        """)
-        rejected_history = cursor.fetchall()
-        
-        cursor.close()
-        db.close()
+        try:
+            # Get approved history
+            cursor.execute("""
+                SELECT id, coordinator_id, subject, message, recipient_emails, status, created_at, approved_at, approved_by, admin_note
+                FROM announcement_requests
+                WHERE status = 'approved'
+                ORDER BY approved_at DESC
+                LIMIT 20
+            """)
+            approved_history = cursor.fetchall()
+            
+            # Get rejected history
+            cursor.execute("""
+                SELECT id, coordinator_id, subject, message, recipient_emails, status, created_at, approved_at, approved_by, admin_note
+                FROM announcement_requests
+                WHERE status = 'rejected'
+                ORDER BY approved_at DESC
+                LIMIT 20
+            """)
+            rejected_history = cursor.fetchall()
+            
+        except Exception as e:
+            import traceback
+            print("ERROR - Announcement failed:", str(e))
+            traceback.print_exc()
+            # Set defaults on error
+            pending_requests = []
+            approved_history = []
+            rejected_history = []
+            alumni_list = []
+            my_requests = []
+        finally:
+            cursor.close()
+            db.close()
 
         return render_template(
             "announcement.html",
@@ -1627,8 +1665,10 @@ def update(alumni_id):
         )
 
     except Exception as e:
+        import traceback
+        print("ERROR - Update alumni failed:", str(e))
+        traceback.print_exc()
         db.rollback()
-        print("UPDATE ERROR:", e)
         return str(e)
 
     finally:
@@ -1716,6 +1756,9 @@ def archive(alumni_id):
         return redirect(url_for('records'))
 
     except Exception as e:
+        import traceback
+        print("ERROR - Archive failed:", str(e))
+        traceback.print_exc()
         db.rollback()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"success": False, "error": str(e)})
@@ -2446,6 +2489,9 @@ def save_user_public():
                     success = "Account created successfully! You can now log in."
                     
             except Exception as e:
+                import traceback
+                print("ERROR - Save user public failed:", str(e))
+                traceback.print_exc()
                 db.rollback()
                 error = f"Registration failed: {str(e)}"
             finally:
@@ -2514,8 +2560,10 @@ def save_user():
         return redirect("/create-user")
 
     except Exception as e:
+        import traceback
+        print("ERROR - Save user failed:", str(e))
+        traceback.print_exc()
         db.rollback()
-        print("ERROR:", e)
 
         return render_template(
             "createuser.html",
@@ -2856,6 +2904,23 @@ def format_stud_num(value):
     value = str(value)
     return value if value.startswith("TAL-") else f"TAL-{value}"
 
+
+
+def safe(v):
+    """Safe value conversion for database storage"""
+    if v is None:
+        return ""
+    if hasattr(v, "strftime"):
+        return v.strftime("%Y-%m-%d")
+    return str(v)
+
+def safe_date(v):
+    """Safe date conversion for database storage"""
+    if v is None:
+        return None
+    if hasattr(v, "strftime"):
+        return v.strftime("%Y-%m-%d")
+    return str(v)
 
 
 def log_activity(activity):
@@ -5221,20 +5286,8 @@ def get_majors(program_name):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    # Production-safe: disable debug in production
+    debug_mode = os.environ.get("FLASK_ENV") != "production"
+    app.run(host="0.0.0.0", port=port, debug=debug_mode)
