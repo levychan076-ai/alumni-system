@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Alumni</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='add.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="left">
+                <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" class="logo">
+                <h2>NEUST-MGT Alumni Record and Employment Tracking System</h2>
+            </div>
+            <div class="right">
+                <span class="role-badge">{{ user_type }}</span>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div class="page-header-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                        <line x1="19" y1="8" x2="19" y2="14"/>
+                        <line x1="22" y1="11" x2="16" y2="11"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="page-title">Add New Alumni</h3>
+                    <p class="page-subtitle">Fill in all required fields to register a new alumni record.</p>
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form class="form-container" method="POST" action="/add" enctype="multipart/form-data">
+
+                <!-- ===== PHOTO UPLOAD ===== -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Alumni Photo</h4>
+                    </div>
+                    <div class="photo-upload-area">
+                        <div class="photo-preview-wrap">
+                            <div class="photo-preview" id="photoPreview">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#aab8c8" stroke-width="1.5" width="40" height="40">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                <img id="photoImg" src="" alt="Preview" style="display:none;">
+                            </div>
+                            <div class="photo-upload-actions">
+                                <label for="photo" class="upload-photo-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    Upload Photo
+                                </label>
+                                <input type="file" id="photo" name="photo" accept="image/*" style="display:none;">
+                                <button type="button" class="remove-photo-btn" id="removePhoto" style="display:none;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                                        <path d="M10 11v6"/><path d="M14 11v6"/>
+                                    </svg>
+                                    Remove
+                                </button>
+                                <p class="photo-hint">JPG, PNG, GIF up to 5MB. Recommended: square photo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== PERSONAL INFORMATION ===== -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Personal Information</h4>
+                    </div>
+                    <div class="form-grid">
+
+                        <div class="field-group full">
+                            <label class="field-label">Student Number <span class="required">*</span></label>
+                            <div class="stud-num-wrap">
+                                <span class="stud-prefix">TAL-</span>
+                                <input type="text"
+                                       name="stud_num_input"
+                                       class="stud-input"
+                                       placeholder="2023-00238"
+                                       required
+                                       pattern="\d{4}-\d{5}"
+                                       maxlength="10"
+                                       title="Format: YYYY-XXXXX (e.g. 2023-00238)">
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Last Name <span class="required">*</span></label>
+                            <input type="text" name="last_name" class="field-input" placeholder="e.g. Santos" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">First Name <span class="required">*</span></label>
+                            <input type="text" name="first_name" class="field-input" placeholder="e.g. Juan" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Middle Name</label>
+                            <input type="text" name="middle_name" class="field-input" placeholder="e.g. Dela Cruz">
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Contact Number <span class="required">*</span></label>
+                            <input type="text"
+                                   name="contact_num"
+                                   class="field-input"
+                                   required
+                                   maxlength="11"
+                                   pattern="09[0-9]{9}"
+                                   title="Must be 11 digits starting with 09"
+                                   placeholder="09123456789">
+                            <small class="field-hint" id="contactHint"></small>
+                        </div>
+
+                        <div class="field-group full">
+                            <label class="field-label">Address <span class="required">*</span></label>
+                            <input type="text" name="address" class="field-input" placeholder="e.g. Brgy. Bantug, Talavera, Nueva Ecija" required>
+                        </div>
+
+                        <div class="field-group full">
+                            <label class="field-label">Email Address <span class="required">*</span></label>
+                            <input type="email" name="email" class="field-input" placeholder="e.g. juan.santos@email.com" required>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ===== EDUCATION INFORMATION ===== -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Education Information</h4>
+                    </div>
+                    <div class="form-grid">
+
+                        <div class="field-group">
+                            <label class="field-label">Program <span class="required">*</span></label>
+                            <select name="program" id="program" class="field-input" required>
+                                <option value="">Select Program</option>
+                                {% for program in programs %}
+                                <option value="{{ program }}">{{ program }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Major <span class="required">*</span></label>
+                            <select name="major" id="major" class="field-input" required>
+                                <option value="">Select Major</option>
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Graduation Date</label>
+                            <input type="date" name="graduation_date" class="field-input" id="graduation_date" max="{{ now.strftime('%Y-%m-%d') }}">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ===== EMPLOYMENT DETAILS ===== -->
+                <div class="form-card" id="employmentCard">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Employment Details</h4>
+                        <span class="emp-badge" id="empCount">0 job(s)</span>
+                    </div>
+
+                    <!-- Overall employment status -->
+                    <div class="form-grid" style="padding-bottom:0;">
+                        <div class="field-group">
+                            <label class="field-label">Employment Status <span class="required">*</span></label>
+                            <select name="employment_status" id="employment_status" class="field-input" required>
+                                <option value="">Select Status</option>
+                                <option value="Employed">Employed</option>
+                                <option value="Unemployed">Unemployed</option>
+                                <option value="Self-Employed">Self-Employed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Job entries container -->
+                    <div id="jobEntriesContainer" style="display:none; padding: 0 18px;">
+                        <div class="jobs-list" id="jobsList">
+                            <!-- Job entries injected by JS -->
+                        </div>
+                        <button type="button" class="add-job-btn" id="addJobBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Add Another Job
+                        </button>
+                    </div>
+                    <div style="height:18px;"></div>
+                </div>
+
+                <!-- ===== SUBMIT ===== -->
+                <div class="form-actions">
+                    <a href="/records" class="cancel-btn">Cancel</a>
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Save Alumni Record
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- AI Scanning overlay -->
+<div class="ai-scan-overlay" id="aiScanOverlay" style="display:none;">
+    <div class="ai-scan-box">
+        <div class="ai-scan-spinner"></div>
+        <p class="ai-scan-text">Analyzing degree relevance with AI...</p>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='add.js') }}"></script>
+<script>
+// Dynamic major loading based on selected program
+document.getElementById('program').addEventListener('change', function() {
+    const selectedProgram = this.value;
+    const majorSelect = document.getElementById('major');
+    
+    // Clear current majors
+    majorSelect.innerHTML = '<option value="">Select Major</option>';
+    
+    if (selectedProgram) {
+        // Fetch majors for selected program
+        fetch(`/api/get-majors/${selectedProgram}`)
+            .then(response => response.json())
+            .then(data => {
+                data.majors.forEach(major => {
+                    const option = document.createElement('option');
+                    option.value = major.name;
+                    option.textContent = major.name;
+                    majorSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching majors:', error);
+            });
+    }
+});
+
+// Load majors when page loads if program is pre-selected
+document.addEventListener('DOMContentLoaded', function() {
+    const programSelect = document.getElementById('program');
+    if (programSelect.value) {
+        programSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+</body>
+</html>

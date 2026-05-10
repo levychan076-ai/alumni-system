@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employment Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='employ.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+
+    <div class="main">
+
+
+        <div class="topbar">
+            <h2>Employment & Company Details</h2>
+            <a href="/records?search={{ search }}&page={{ page }}" class="back-btn">⬅ Back</a>
+        </div>
+
+
+        <div class="content">
+            <div class="card">
+
+                <table class="employ-table">
+                    <tr>
+                        <th>Status</th>
+                        <th>Job Title</th>
+                        <th>Sector</th>
+                        <th>Relevance</th>
+                    </tr>
+
+                    {% if employ %}
+                        {% for emp in employ %}
+                        <tr>
+                            <td>{{ emp.employment_status }}</td>
+                            <td>{{ emp.job_title }}</td>
+                            <td>{{ emp.employment_sector }}</td>
+                            <td>{{ emp.degree_relevance_to_work }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align:center;">No employment record found</td>
+                        </tr>
+                    {% endif %}
+
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Alumni</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='update.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="left">
+                <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" class="logo">
+                <h2>NEUST-MGT Alumni Record and Employment Tracking System</h2>
+            </div>
+            <div class="right">
+                <span class="role-badge">{{ user_type }}</span>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div class="page-header-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="page-title">Update Alumni Record</h3>
+                    <p class="page-subtitle">Edit and save changes to the alumni's information below.</p>
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form class="form-container" method="POST" enctype="multipart/form-data" novalidate>
+
+                <!-- HIDDEN ID -->
+                <input type="hidden" name="alumni_id" value="{{ alumni.alumni_id }}">
+
+                <!-- ===== PHOTO UPLOAD ===== -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Alumni Photo</h4>
+                    </div>
+                    <div class="photo-upload-area">
+                        <div class="photo-preview-wrap">
+                            <div class="photo-preview {% if alumni.photo %}has-photo{% endif %}" id="photoPreview">
+                                {% if alumni.photo %}
+                                    <img id="photoImg"
+                                         src="{{ url_for('static', filename='uploads/' + alumni.photo) }}"
+                                         alt="Alumni Photo"
+                                         onerror="this.style.display='none'; document.getElementById('photoPlaceholder').style.display='block';">
+                                    <svg id="photoPlaceholder" viewBox="0 0 24 24" fill="none" stroke="#aab8c8" stroke-width="1.5" width="40" height="40" style="display:none;">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                {% else %}
+                                    <svg id="photoPlaceholder" viewBox="0 0 24 24" fill="none" stroke="#aab8c8" stroke-width="1.5" width="40" height="40">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                    <img id="photoImg" src="" alt="Preview" style="display:none;">
+                                {% endif %}
+                            </div>
+                            <div class="photo-upload-actions">
+                                <label for="photo" class="upload-photo-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    {% if alumni.photo %}Change Photo{% else %}Upload Photo{% endif %}
+                                </label>
+                                <input type="file" id="photo" name="photo" accept="image/*" style="display:none;">
+                                <button type="button" class="remove-photo-btn" id="removePhoto"
+                                    style="display:{% if alumni.photo %}inline-flex{% else %}none{% endif %};">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                                        <path d="M10 11v6"/><path d="M14 11v6"/>
+                                    </svg>
+                                    Remove Photo
+                                </button>
+                                <input type="hidden" name="remove_photo" id="removePhotoFlag" value="0">
+                                <p class="photo-hint">JPG, PNG, GIF up to 5MB. Recommended: square photo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== PERSONAL INFORMATION ===== -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Personal Information</h4>
+                    </div>
+                    <div class="form-grid">
+
+                        <div class="field-group full">
+                            <label class="field-label">Student Number <span class="required">*</span></label>
+                            <div class="stud-num-wrap">
+                                <span class="stud-prefix">TAL-</span>
+                                <input type="text"
+                                       name="stud_num"
+                                       class="stud-input"
+                                       value="{{ alumni.stud_num.replace('TAL-', '') if alumni.stud_num else '' }}"
+                                       placeholder="0000-00000"
+                                       pattern="\d{4}-\d{5}"
+                                       title="Format: 0000-00000"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Last Name <span class="required">*</span></label>
+                            <input type="text" name="last_name" class="field-input" value="{{ alumni.last_name }}" placeholder="e.g. Santos" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">First Name <span class="required">*</span></label>
+                            <input type="text" name="first_name" class="field-input" value="{{ alumni.first_name }}" placeholder="e.g. Juan" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Middle Name</label>
+                            <input type="text" name="middle_name" class="field-input" value="{{ alumni.middle_name or '' }}" placeholder="e.g. Dela Cruz">
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Contact Number <span class="required">*</span></label>
+                            <input type="text"
+                                   name="contact_num"
+                                   class="field-input"
+                                   id="contact_num"
+                                   required
+                                   maxlength="11"
+                                   pattern="09[0-9]{9}"
+                                   title="Must be 11 digits starting with 09"
+                                   placeholder="09123456789"
+                                   value="{{ alumni.contact_num | default('') | string | replace(' ', '') | replace('-', '') }}">
+                            <small class="field-hint" id="contactHint"></small>
+                        </div>
+
+                        <div class="field-group full">
+                            <label class="field-label">Address <span class="required">*</span></label>
+                            <input type="text" name="address" class="field-input" value="{{ alumni.address or '' }}" placeholder="e.g. Brgy. Bantug, Talavera, Nueva Ecija" required>
+                        </div>
+
+                        <div class="field-group full">
+                            <label class="field-label">Email Address <span class="required">*</span></label>
+                            <input type="email" name="email" class="field-input" value="{{ alumni.email or '' }}" placeholder="e.g. juan.santos@email.com" required>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ===== EDUCATION INFORMATION ===== -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Education Information</h4>
+                    </div>
+                    <div class="form-grid">
+
+                        <div class="field-group">
+                            <label class="field-label">Program <span class="required">*</span></label>
+                            <select name="program" id="program" class="field-input" required>
+                                <option value="">Select Program</option>
+                                {% for program in programs %}
+                                <option value="{{ program }}" {% if educ and educ.program == program %}selected{% endif %}>{{ program }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Major <span class="required">*</span></label>
+                            <select name="major" id="major" class="field-input" required>
+                                <option value="">Select Major</option>
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Graduation Date</label>
+                            <input type="date" name="graduation_date" id="graduation_date" class="field-input"
+                                   value="{{ educ.graduation_date if educ and educ.graduation_date else '' }}" max="{{ now.strftime('%Y-%m-%d') }}">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ===== EMPLOYMENT DETAILS (MULTI-JOB) ===== -->
+                <div class="form-card" id="employmentCard">
+                    <div class="form-card-header">
+                        <span class="form-card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                            </svg>
+                        </span>
+                        <h4 class="form-card-title">Employment Details</h4>
+                        <span class="emp-badge" id="empCount">0 job(s)</span>
+                    </div>
+
+                    <!-- Overall status -->
+                    <div class="form-grid" style="padding-bottom:0;">
+                        <div class="field-group">
+                            <label class="field-label">Employment Status <span class="required">*</span></label>
+                            <select name="employment_status" id="employment_status" class="field-input" required>
+                                <option value="">Select Status</option>
+                                <option value="Employed"      {% if employ and employ[0] and employ[0].employment_status == "Employed"      %}selected{% endif %}>Employed</option>
+                                <option value="Unemployed"    {% if employ and employ[0] and employ[0].employment_status == "Unemployed"    %}selected{% endif %}>Unemployed</option>
+                                <option value="Self-Employed" {% if employ and employ[0] and employ[0].employment_status == "Self-Employed" %}selected{% endif %}>Self-Employed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Job entries -->
+                    <div id="jobEntriesContainer" style="padding: 0 18px;">
+                        <div class="jobs-list" id="jobsList">
+                            {% if employ %}
+                                {% for job in employ %}
+                                    {% if job and job.employment_status != "Unemployed" %}
+                                    <div class="job-entry" data-index="{{ loop.index }}">
+                                        <div class="job-entry-header">
+                                            <span class="job-entry-label">Job #{{ loop.index }}</span>
+                                            <button type="button" class="remove-job-btn" onclick="removeJobEntry(this)">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                                </svg>
+                                                Remove
+                                            </button>
+                                        </div>
+                                        <div class="job-entry-grid">
+                                            <div class="field-group">
+                                                <label class="field-label">Job Title</label>
+                                                <input type="text"
+                                                       name="job_title[]"
+                                                       class="field-input"
+                                                       data-field="job_title"
+                                                       value="{{ job.job_title or '' }}"
+                                                       placeholder="e.g. Software Engineer">
+                                            </div>
+                                            <div class="field-group">
+                                                <label class="field-label">Employment Sector</label>
+                                                <input type="text"
+                                                       name="employment_sector[]"
+                                                       class="field-input"
+                                                       data-field="employment_sector"
+                                                       value="{{ job.employment_sector or '' }}"
+                                                       placeholder="e.g. Government, Private">
+                                            </div>
+                                            <div class="field-group full">
+                                                <label class="field-label">Degree Relevance to Work</label>
+                                                <select name="degree_relevance_to_work[]"
+                                                        class="field-input"
+                                                        data-field="degree_relevance">
+                                                    <option value="">Select or let AI decide</option>
+                                                    <option value="Directly Related"   {% if job.degree_relevance_to_work == "Directly Related"   %}selected{% endif %}>Directly Related</option>
+                                                    <option value="Moderately Related" {% if job.degree_relevance_to_work == "Moderately Related" %}selected{% endif %}>Moderately Related</option>
+                                                    <option value="Slightly Related"   {% if job.degree_relevance_to_work == "Slightly Related"   %}selected{% endif %}>Slightly Related</option>
+                                                    <option value="Not Related"        {% if job.degree_relevance_to_work == "Not Related"        %}selected{% endif %}>Not Related</option>
+                                                </select>
+                                                <div class="relevance-auto-badge" style="display:none;" data-badge="relevance">
+                                                    <span class="relevance-dot"></span>
+                                                    <span class="relevance-label"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <button type="button" class="add-job-btn" id="addJobBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Add Another Job
+                        </button>
+                    </div>
+                    <div style="height:18px;"></div>
+                </div>
+
+                <!-- ===== SUBMIT ===== -->
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" id="cancelBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Cancel
+                    </button>
+                    <button type="submit" class="submit-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- AI Scanning overlay -->
+<div class="ai-scan-overlay" id="aiScanOverlay" style="display:none;">
+    <div class="ai-scan-box">
+        <div class="ai-scan-spinner"></div>
+        <p class="ai-scan-text">Analyzing degree relevance with AI...</p>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='update.js') }}"></script>
+<script>
+// Dynamic major loading based on selected program
+document.getElementById('program').addEventListener('change', function() {
+    const selectedProgram = this.value;
+    const majorSelect = document.getElementById('major');
+    
+    // Clear current majors
+    majorSelect.innerHTML = '<option value="">Select Major</option>';
+    
+    if (selectedProgram) {
+        // Fetch majors for selected program
+        fetch(`/api/get-majors/${selectedProgram}`)
+            .then(response => response.json())
+            .then(data => {
+                data.majors.forEach(major => {
+                    const option = document.createElement('option');
+                    option.value = major.name;
+                    option.textContent = major.name;
+                    // Set selected if matches current education
+                    {% if educ and educ.major %}
+                    if (major.name === '{{ educ.major }}') {
+                        option.selected = true;
+                    }
+                    {% endif %}
+                    majorSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching majors:', error);
+            });
+    }
+});
+
+// Load majors when page loads if program is pre-selected
+document.addEventListener('DOMContentLoaded', function() {
+    const programSelect = document.getElementById('program');
+    if (programSelect.value) {
+        programSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+</body>
+</html>

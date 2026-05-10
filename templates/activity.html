@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Activity Logs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='activity.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar collapsed" id="sidebar">
+
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" class="sidebar-logo">
+            <h2 class="menu-title">NEUST-MGT Alumni Record and Employment Tracking System</h2>
+        </div>
+
+        <a href="/dashboard" class="menu {% if request.path == '/dashboard' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+            </span>
+            <span class="menu-label">Dashboard</span>
+        </a>
+
+        <a href="/records" class="menu {% if request.path == '/records' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 3 17 8 12 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="13" y2="17"/>
+                </svg>
+            </span>
+            <span class="menu-label">Alumni Records</span>
+        </a>
+
+        <a href="/announcement" class="menu {% if request.path == '/announcement' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </span>
+            <span class="menu-label">Announcement</span>
+        </a>
+
+        <a href="/activity" class="menu {% if request.path == '/activity' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </span>
+            <span class="menu-label">Activity Logs</span>
+        </a>
+
+        {% if user_type == "Admin" %}
+        <a href="/alumni-notif" class="menu {% if request.path == '/alumni-notif' %}active{% endif %}">
+            <span class="menu-icon" style="position:relative;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="notif-dot" id="sidebarNotifDot" style="display:none;"></span>
+            </span>
+            <span class="menu-label">Alumni Notifications</span>
+        </a>
+        {% endif %}
+
+        <!-- ===== SIDEBAR ARROW TOGGLE ===== -->
+        <button class="sidebar-toggle-arrow" id="toggleBtn" aria-label="Toggle sidebar">
+            <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+
+    </div>
+    <!-- end .sidebar -->
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="left">
+                <h2 class="title">ACTIVITY LOGS</h2>
+            </div>
+            <div class="right">
+                <span class="role-badge">{{ user_type }}</span>
+                <button type="button" class="logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            <!-- ACTIONS ROW -->
+            <div class="actions-row">
+                <div class="actions-left">
+                    <h3 class="section-title">
+                        <span class="section-title-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </span>
+                        System Activity Logs
+                    </h3>
+                </div>
+            </div>
+
+            <!-- TABLE CARD -->
+            <div class="table-card">
+                <div class="table-wrapper">
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>User Type</th>
+                                <th>Activity</th>
+                                <th>Date &amp; Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.username }}</td>
+                                <td>{{ log.user_type }}</td>
+                                <td>{{ log.activity }}</td>
+                                <td>{{ log.date_time }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- end .table-card -->
+
+        </div>
+        <!-- end .content -->
+
+    </div>
+    <!-- end .main -->
+
+</div>
+<!-- end .container -->
+
+<script src="{{ url_for('static', filename='activity.js') }}"></script>
+</body>
+</html>

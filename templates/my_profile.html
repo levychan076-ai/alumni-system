@@ -1,0 +1,3149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile — NEUST Alumni</title>
+    {% set current_year = now.year %}
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --navy:       #0d2137;
+            --navy-mid:   #1a3a5c;
+            --gold:       #c9a84c;
+            --gold-light: #e8c97a;
+            --cream:      #f9f6f0;
+            --white:      #ffffff;
+            --red:        #b22222;
+            --green:      #1e6b3c;
+            --text:       #1a1a2e;
+            --muted:      #6b7a8d;
+            --border:     #dde3ee;
+            --bg:         #f4f6fb;
+            --shadow:     0 2px 16px rgba(13,33,55,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            font-family: 'Source Sans 3', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* TOP BAR */
+        .topbar {
+            background: var(--navy);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+
+        .topbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-logo {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            filter: drop-shadow(0 1px 4px rgba(201,168,76,0.4));
+        }
+
+        .topbar-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1rem;
+            line-height: 1.2;
+        }
+
+        .topbar-sub {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 30px;
+            padding: 4px 14px 4px 6px;
+        }
+
+        .user-avatar-sm {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--gold);
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .user-name-sm {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(178,34,34,0.15);
+            border: 1px solid rgba(178,34,34,0.35);
+            color: #ff8a8a;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(178,34,34,0.3);
+            color: #ffaaaa;
+        }
+
+        /* PAGE */
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 20px 60px;
+        }
+
+        /* PROFILE HERO */
+        .profile-hero {
+            background: var(--navy);
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(13,33,55,0.2);
+        }
+
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            right: -40px; top: -40px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: rgba(201,168,76,0.06);
+            border: 1px solid rgba(201,168,76,0.1);
+        }
+
+        .profile-hero::after {
+            content: '';
+            position: absolute;
+            right: 40px; top: 60px;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: rgba(201,168,76,0.04);
+            border: 1px solid rgba(201,168,76,0.08);
+        }
+
+        .profile-photo-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-photo {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--gold);
+            box-shadow: 0 4px 16px rgba(201,168,76,0.3);
+        }
+
+        .profile-initials {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, #a07820 100%);
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 900;
+            border: 3px solid rgba(201,168,76,0.4);
+            box-shadow: 0 4px 16px rgba(201,168,76,0.2);
+        }
+
+        .hero-info { flex: 1; min-width: 0; }
+
+        .hero-name {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .hero-stud {
+            color: rgba(255,255,255,0.55);
+            font-size: 0.82rem;
+            letter-spacing: 0.05em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .hero-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .hero-tag {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.75);
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hero-tag.gold {
+            background: rgba(201,168,76,0.15);
+            border-color: rgba(201,168,76,0.3);
+            color: var(--gold-light);
+        }
+
+        /* ALERT */
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-error { background: #fff5f5; border: 1px solid #fcc; color: var(--red); }
+        .alert-success { background: #f0faf4; border: 1px solid #a8d5bc; color: var(--green); }
+        .alert-info { background: #f0f5ff; border: 1px solid #c5d5f8; color: var(--navy-mid); }
+        .alert svg { flex-shrink: 0; margin-top: 2px; }
+
+        /* CARDS */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(221,227,238,0.6);
+        }
+
+        .card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e8f0fe, #c5d5f8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .card-body { padding: 24px; }
+
+        /* FORM GRID */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-grid .full { grid-column: 1 / -1; }
+
+        .field-group { display: flex; flex-direction: column; }
+
+        .field-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+
+        .field-label .req { color: var(--red); margin-left: 2px; }
+
+        .field-input {
+            padding: 9px 13px;
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: #fafbfd;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .field-input:focus {
+            border-color: var(--navy);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(13,33,55,0.07);
+        }
+
+        .field-input:read-only, .field-input:disabled {
+            background: #f2f4f8;
+            color: var(--muted);
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
+        .field-value {
+            padding: 9px 13px;
+            background: #f4f6fb;
+            border: 1.5px dashed var(--border);
+            border-radius: 7px;
+            font-size: 0.9rem;
+            color: var(--text);
+            min-height: 38px;
+        }
+
+        /* STUDENT NUMBER WRAPPER */
+        .stud-num-wrap {
+            display: flex;
+            align-items: center;
+            background: #fafbfd;
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            transition: all 0.2s;
+        }
+        
+        .stud-num-wrap:focus-within {
+            border-color: var(--navy);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(13,33,55,0.07);
+        }
+        
+        .stud-prefix {
+            padding: 9px 13px;
+            background: var(--navy);
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 7px 0 0 7px;
+            border-right: 2px solid var(--gold);
+        }
+        
+        .stud-num-wrap .field-input {
+            border: none;
+            background: transparent;
+            padding: 9px 13px;
+            border-radius: 0 7px 7px 0;
+            flex: 1;
+        }
+        
+        /* ================================================================
+           PHOTO UPLOAD
+           ================================================================ */
+        .photo-upload-area {
+            padding: 20px 18px;
+        }
+
+        .photo-preview-wrap {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .photo-preview {
+            width: 110px;
+            height: 110px;
+            border-radius: 10px;
+            background: #f0f4fb;
+            border: 2px dashed #c5d3e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: border-color 0.2s;
+            position: relative;
+        }
+
+        .photo-preview.has-photo {
+            border: 2px solid #0d6efd;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .photo-upload-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .upload-photo-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #0d6efd;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .upload-photo-btn svg { stroke: white; }
+        .upload-photo-btn:hover { background: #0b5ed7; }
+
+        .remove-photo-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #fdecea;
+            color: #c0392b;
+            border: 1px solid #f5c6c2;
+            padding: 6px 12px;
+            border-radius: 7px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .remove-photo-btn svg { stroke: #c0392b; }
+        .remove-photo-btn:hover { background: #f8d7da; }
+
+        .photo-hint {
+            margin: 0;
+            font-size: 11.5px;
+            color: #9aabbf;
+        }
+
+        /* ================================================================
+           MULTI-JOB ENTRIES
+           ================================================================ */
+        .jobs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .job-entry {
+            background: #f7faff;
+            border: 1px solid #dde8f7;
+            border-radius: 9px;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+            animation: jobSlideIn 0.25s ease;
+        }
+
+        @keyframes jobSlideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .job-entry:hover { box-shadow: 0 2px 10px rgba(13,110,253,0.08); }
+
+        .job-entry-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #eef4ff;
+            border-bottom: 1px solid #dde8f7;
+        }
+
+        .job-entry-label {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+
+        .remove-job-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fdecea;
+            color: #c0392b;
+            border: none;
+            border-radius: 5px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .remove-job-btn svg { stroke: #c0392b; }
+        .remove-job-btn:hover { background: #f8d7da; }
+
+        .job-entry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 14px;
+        }
+
+        .job-entry-grid .field-group.full {
+            grid-column: 1 / -1;
+        }
+
+        /* Add job button */
+        .add-job-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f0fe;
+            color: #1a73e8;
+            border: 1px dashed #1a73e8;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 12px;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .add-job-btn svg { stroke: #1a73e8; }
+        .add-job-btn:hover { background: #d0e3ff; }
+
+        /* Employment badge */
+        .emp-badge {
+            background: #e8f0fe;
+            color: #1a73e8;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        /* Updated button styles to match Coordinator form */
+        .btn-save {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+        }
+
+        .btn-save svg { stroke: white; }
+        .btn-save:hover { background: #0b5ed7; box-shadow: 0 4px 12px rgba(13,110,253,0.3); transform: translateY(-1px); }
+        .btn-save:disabled { background: #9bbcf7; cursor: not-allowed; transform: none; }
+
+        .btn-cancel {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: #7a8fa6;
+            border: 1px solid #d8e3ef;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn-cancel:hover { background: #f0f4ff; color: #1a2e4a; }
+
+        /* SECTION */
+        .section-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label:first-child { margin-top: 0; }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* BUTTONS */
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn-save {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 24px;
+            background: var(--navy);
+            color: var(--gold);
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background: var(--navy-mid);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(13,33,55,0.2);
+        }
+
+        .btn-cancel {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            background: transparent;
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover { border-color: var(--muted); color: var(--text); }
+
+        .btn-request {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 22px;
+            background: var(--gold);
+            color: var(--navy);
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-request:hover {
+            background: var(--gold-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(201,168,76,0.35);
+        }
+
+        /* STATUS BADGE */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .status-employed { background: #e6f4ec; color: #1e6b3c; }
+        .status-unemployed { background: #fff5f5; color: var(--red); }
+        .status-other { background: #fff8e6; color: #7a5800; }
+
+        /* NO RECORD */
+        .no-record {
+            text-align: center;
+            padding: 48px 24px;
+        }
+
+        .no-record-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: #f0f5ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .no-record h3 {
+            font-size: 1.05rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .no-record p { font-size: 0.87rem; color: var(--muted); }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(13,33,55,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background: var(--white);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalIn 0.3s cubic-bezier(.22,.68,0,1.2);
+            overflow: hidden;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            background: var(--navy);
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1.05rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+        }
+
+        .modal-close:hover { color: #fff; }
+
+        /* APPROVED NOTIFICATION STYLES */
+        .approved-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--navy);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 320px;
+            animation: slideInUp 0.4s cubic-bezier(.22,.68,0,1.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .approved-notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .approved-notification-icon {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .approved-notification-text {
+            flex: 1;
+        }
+
+        .approved-notification-text strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .approved-notification-text div {
+            font-size: 12px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .approved-notification-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .approved-notification-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-body { padding: 24px; }
+
+        .modal-msg {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .modal-msg strong { color: var(--text); }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        select.field-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7a8d' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .profile-hero { flex-direction: column; text-align: center; }
+            .hero-tags { justify-content: center; }
+            .actions { justify-content: stretch; }
+            .btn-save, .btn-cancel, .btn-request { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="topbar-left">
+        <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" class="topbar-logo" alt="NEUST Logo">
+        <div>
+            <div class="topbar-title">NEUST Alumni Portal</div>
+            <div class="topbar-sub">Talavera Academic Extension Campus</div>
+        </div>
+    </div>
+    <div class="topbar-right">
+        <div class="user-pill">
+            <div class="user-avatar-sm">
+                {% if alumni %}{{ alumni.first_name[0]|upper }}{{ alumni.last_name[0]|upper }}{% else %}AL{% endif %}
+            </div>
+            <span class="user-name-sm">{{ session.get('alumni_fullname', 'Alumni') }}</span>
+        </div>
+        <a href="/logout" class="logout-btn" id="logoutBtn" onclick="handleLogout(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+        </a>
+    </div>
+</div>
+
+<div class="page">
+
+    {% if error %}
+    <div class="alert alert-error" style="margin-bottom:20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success" style="margin-bottom:20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ success }}
+    </div>
+    {% endif %}
+
+    {% if alumni %}
+
+    <!-- PROFILE HERO -->
+    <div class="profile-hero">
+        <div class="profile-photo-wrap">
+            {% if alumni.photo %}
+            <img src="{{ url_for('static', filename='uploads/' + alumni.photo) }}" class="profile-photo" alt="Profile Photo" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="profile-initials" style="display:none;">
+                {{ (alumni.first_name or '')[0]|upper }}{{ (alumni.last_name or '')[0]|upper }}
+            </div>
+            {% else %}
+            <div class="profile-initials">
+                {{ (alumni.first_name or '')[0]|upper }}{{ (alumni.last_name or '')[0]|upper }}
+            </div>
+            {% endif %}
+        </div>
+        <div class="hero-info">
+            <div class="hero-name">{{ alumni.last_name }}, {{ alumni.first_name }} {% if alumni.middle_name %}{{ alumni.middle_name[0] }}.{% endif %}</div>
+            <div class="hero-stud">{{ alumni.stud_num or '—' }}</div>
+            <div class="hero-tags">
+                {% if degree %}
+                <span class="hero-tag gold">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    {{ degree.program }}{% if degree.major %} — {{ degree.major }}{% endif %}
+                </span>
+                {% if degree.graduation_date %}
+                <span class="hero-tag">Graduated: {{ degree.graduation_date.strftime('%Y') if degree.graduation_date else '—' }}</span>
+                {% endif %}
+                {% endif %}
+                {% if employment %}
+                <span class="hero-tag {% if employment[0].employment_status == 'Employed' %}gold{% endif %}">
+                    {{ employment[0].employment_status or 'Unknown' }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW MODE -->
+    <div id="viewMode">
+        <!-- Personal Info Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <span class="card-title">Personal Information</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="field-group">
+                        <label class="field-label">Student Number</label>
+                        <div class="field-value">{{ alumni.stud_num or '—' }}</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Last Name</label>
+                        <div class="field-value">{{ alumni.last_name or '—' }}</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">First Name</label>
+                        <div class="field-value">{{ alumni.first_name or '—' }}</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Middle Name</label>
+                        <div class="field-value">{{ alumni.middle_name or '—' }}</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Email Address</label>
+                        <div class="field-value">{{ alumni.email or '—' }}</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Contact Number</label>
+                        <div class="field-value">{{ alumni.contact_num or '—' }}</div>
+                    </div>
+                    <div class="field-group full">
+                        <label class="field-label">Address</label>
+                        <div class="field-value">{{ alumni.address or '—' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Degree Program Card -->
+        {% if degree %}
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    </div>
+                    <span class="card-title">Degree Program Information</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="field-group">
+                        <label class="field-label">Degree Program</label>
+                        <div class="field-value">{{ degree.program or '—' }}</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Major</label>
+                        <div class="field-value">{{ degree.major or '—' }}</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Graduation Date</label>
+                        <div class="field-value">{{ degree.graduation_date.strftime('%B %d, %Y') if degree.graduation_date else '—' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Employment Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <span class="card-title">Employment Information</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if employment %}
+                {% for e in employment %}
+                <div class="job-block" style="cursor:default;">
+                    <div class="form-grid">
+                        <div class="field-group">
+                            <label class="field-label">Status</label>
+                            <div class="field-value">
+                                <span class="status-badge {% if e.employment_status == 'Employed' %}status-employed{% elif e.employment_status == 'Unemployed' %}status-unemployed{% else %}status-other{% endif %}">
+                                    {{ e.employment_status or '—' }}
+                                </span>
+                            </div>
+                        </div>
+                        {% if e.employment_status != 'Unemployed' %}
+                        <div class="field-group">
+                            <label class="field-label">Job Title</label>
+                            <div class="field-value">{{ e.job_title or '—' }}</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Sector</label>
+                            <div class="field-value">{{ e.employment_sector or '—' }}</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Degree Relevance</label>
+                            <div class="field-value">{{ e.degree_relevance_to_work or '—' }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div style="text-align:center; padding:20px; color:var(--muted); font-size:0.88rem;">No employment record yet.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="actions">
+            <button class="btn-request" onclick="requestUpdate()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Request Update
+            </button>
+        </div>
+
+        <!-- APPROVED REQUEST NOTIFICATION (Floating Bottom Right) -->
+        <div id="approvedNotification" class="approved-notification" style="display:none;">
+            <div class="approved-notification-content">
+                <div class="approved-notification-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M22 11.08V12a10 10 0 1 1-20 0v-1a9 9 0 0 0-18 0"/>
+                        <polyline points="22 4 12 14.01 3 20.01"/>
+                    </svg>
+                </div>
+                <div class="approved-notification-text">
+                    <strong>Update Request Approved</strong>
+                    <div>Click to update your information</div>
+                </div>
+                <button class="approved-notification-close" onclick="hideApprovedNotification()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODE (only shown when can_edit is True and popup clicked) -->
+    <div id="editMode" style="display:none;">
+        <div class="alert alert-info" style="margin-bottom:20px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div><strong>Update Approved!</strong> Your request to update your profile has been approved by the Admin. You may now edit your information below.</div>
+        </div>
+
+        <form method="POST" action="/my-profile" enctype="multipart/form-data" id="updateForm">
+
+            <!-- Personal Info Edit -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <span class="card-title">Personal Information</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="section-label">Profile Photo</div>
+                    <div class="form-grid">
+                        <div class="field-group full">
+                            <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                                <img id="photoPreview"
+                                     src="{% if alumni.photo %}{{ url_for('static', filename='uploads/' + alumni.photo) }}{% else %}{% endif %}"
+                                     class="photo-preview"
+                                     {% if not alumni.photo %}style="display:none;"{% endif %}
+                                     onerror="this.style.display='none'; this.parentElement.querySelector('.photo-upload-text').style.display='block';"
+                                     alt="Preview">
+                                <div class="photo-upload-text">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#b0bec5" stroke-width="2" width="24" height="24" style="margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    <div>Click to upload photo</div>
+                                    <div style="font-size:0.72rem; margin-top:2px;">JPG, PNG, GIF, WEBP — max 5MB</div>
+                                </div>
+                                <input type="file" id="photoInput" name="photo" accept=".jpg,.jpeg,.png,.gif,.webp" onchange="previewPhoto(this)">
+                            </div>
+                            {% if alumni.photo %}
+                            <label style="display:flex; align-items:center; gap:6px; margin-top:8px; font-size:0.82rem; cursor:pointer;">
+                                <input type="checkbox" name="remove_photo" value="1" onchange="if(this.checked){document.getElementById('photoPreview').style.display='none';}else{document.getElementById('photoPreview').style.display='block';}">
+                                Remove current photo
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="section-label">Personal Details</div>
+                    <div class="form-grid">
+                        <div class="field-group">
+                            <label class="field-label">Student Number <span class="req">*</span></label>
+                            <div class="stud-num-wrap">
+                                <span class="stud-prefix">TAL-</span>
+                                <input type="text"
+                                       name="stud_num"
+                                       class="field-input"
+                                       placeholder="2023-00238"
+                                       value="{{ alumni.stud_num.replace('TAL-', '') if alumni.stud_num else '' }}"
+                                       required
+                                       pattern="\d{4}-\d{5}"
+                                       maxlength="10"
+                                       title="Format: YYYY-XXXXX (e.g. 2023-00238)">
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Last Name <span class="req">*</span></label>
+                            <input type="text" name="last_name" class="field-input" value="{{ alumni.last_name or '' }}" required>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">First Name <span class="req">*</span></label>
+                            <input type="text" name="first_name" class="field-input" value="{{ alumni.first_name or '' }}" required>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Middle Name</label>
+                            <input type="text" name="middle_name" class="field-input" value="{{ alumni.middle_name or '' }}" placeholder="Optional">
+                        </div>
+                    </div>
+
+                    <div class="section-label" style="margin-top:20px;">Contact Details</div>
+                    <div class="form-grid">
+                        <div class="field-group">
+                            <label class="field-label">Email <span class="req">*</span></label>
+                            <input type="email" name="email" class="field-input" value="{{ alumni.email or '' }}" required>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Contact Number <span class="req">*</span></label>
+                            <input type="text" name="contact_num" class="field-input" value="{{ alumni.contact_num or '' }}" placeholder="09XXXXXXXXX" required>
+                        </div>
+                        <div class="field-group full">
+                            <label class="field-label">Address</label>
+                            <input type="text" name="address" class="field-input" value="{{ alumni.address or '' }}" placeholder="Complete Address">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Degree Program Edit -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                        </div>
+                        <span class="card-title">Degree Program Information</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid">
+                        <div class="field-group">
+                            <label class="field-label">Degree Program <span class="req">*</span></label>
+                            <select name="program" id="program" class="field-input" required>
+                                <option value="">Select Program</option>
+                                {% for program in programs %}
+                                <option value="{{ program }}" {% if degree and degree.program == program %}selected{% endif %}>{{ program }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label">Major <span class="req">*</span></label>
+                            <select name="major" id="major" class="field-input" required>
+                                <option value="">Select Major</option>
+                                {% if degree and degree.major %}
+                                <option value="{{ degree.major }}" selected>{{ degree.major }}</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="field-group">
+                            <label class="field-label">Graduation Date</label>
+                            <input type="date" name="graduation_date" class="field-input" value="{{ degree.graduation_date.strftime('%Y-%m-%d') if degree and degree.graduation_date else '' }}" max="{{ now.strftime('%Y-%m-%d') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment Edit -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                        </div>
+                        <span class="card-title">Employment Information</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="field-group" style="margin-bottom:16px;">
+                        <label class="field-label">Employment Status <span class="req">*</span></label>
+                        <select name="employment_status" class="field-input" id="employment_status" onchange="toggleJobs(this.value)" required>
+                            <option value="">-- Select Status --</option>
+                            {% set current_status = employment[0].employment_status if employment else '' %}
+                            <option value="Employed" {% if current_status == 'Employed' %}selected{% endif %}>Employed</option>
+                            <option value="Unemployed" {% if current_status == 'Unemployed' %}selected{% endif %}>Unemployed</option>
+                            <option value="Self-employed" {% if current_status == 'Self-employed' %}selected{% endif %}>Self-employed</option>
+                            <option value="Underemployed" {% if current_status == 'Underemployed' %}selected{% endif %}>Underemployed</option>
+                        </select>
+                    </div>
+
+                    <div id="jobEntriesContainer">
+                        <div id="jobsList">
+                        {% if employment and employment[0].employment_status != 'Unemployed' %}
+                        {% for e in employment %}
+                        <div class="job-block">
+                            <div class="job-block-header">
+                                <span class="job-block-title">Job {{ loop.index }}</span>
+                                <button type="button" class="btn-remove-job" onclick="removeJob(this)">✕ Remove</button>
+                            </div>
+                            <div class="form-grid">
+                                <div class="field-group">
+                                    <label class="field-label">Job Title</label>
+                                    <input type="text" name="job_title[]" class="field-input" value="{{ e.job_title or '' }}" placeholder="e.g. Teacher">
+                                </div>
+                                <div class="field-group">
+                                    <label class="field-label">Sector</label>
+                                    <input type="text" name="employment_sector[]" class="field-input" value="{{ e.employment_sector or '' }}" placeholder="e.g. Government, Private, BPO, Education">
+                                </div>
+                                <div class="field-group full">
+                                    <label class="field-label">Degree Relevance</label>
+                                    <select name="degree_relevance_to_work[]" class="field-input">
+                                        <option value="">-- Select --</option>
+                                        {% set rel = e.degree_relevance_to_work or '' %}
+                                        <option value="Directly Related" {% if rel == 'Directly Related' %}selected{% endif %}>Directly Related</option>
+                                        <option value="Moderately Related" {% if rel == 'Moderately Related' %}selected{% endif %}>Moderately Related</option>
+                                        <option value="Slightly Related" {% if rel == 'Slightly Related' %}selected{% endif %}>Slightly Related</option>
+                                        <option value="Not Related" {% if rel == 'Not Related' %}selected{% endif %}>Not Related</option>
+                                        <option value="Let AI decide" {% if rel == 'Let AI decide' %}selected{% endif %}>Let AI decide</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-job" id="addJobBtn" onclick="addJob()" {% if employment and employment[0].employment_status == 'Unemployed' %}style="display:none;"{% endif %}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Another Job
+                    </button>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn-cancel" id="cancelEditBtn" onclick="handleCancelEdit()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Cancel
+                </button>
+                <button type="submit" class="btn-save" id="saveChangesBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 0-2-2V5a2 2 0 0 0 2-2h11l5 5v11a2 2 0 0 0-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% else %}
+    <!-- NO LINKED RECORD - ALLOW CREATION -->
+    <div class="card">
+        <div class="card-body">
+            <div class="no-record" style="text-align:center; padding:30px;">
+                <div class="no-record-icon" style="margin:0 auto 16px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5" width="48" height="48"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <h3 style="color:var(--navy); margin-bottom:12px;">No Alumni Record Found</h3>
+                <p style="color:var(--text); margin-bottom:24px;">Your account has been created successfully.<br>Click the button below to add your complete alumni profile.</p>
+                <button type="button" class="btn-request" onclick="showAddRecordForm()" style="margin:0 auto;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+                    Add Record
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE CREATION FORM (HIDDEN BY DEFAULT) -->
+    
+    <!-- PAGE HEADER -->
+    <div class="card" style="margin-bottom: 24px;" id="createFormHeader" style="display:none;">
+        <div class="card-header">
+            <div class="card-header-left">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                        <line x1="19" y1="8" x2="19" y2="14"/>
+                        <line x1="22" y1="11" x2="16" y2="11"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="card-title" style="font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 4px;">Add New Alumni</h3>
+                    <p style="font-size: 0.85rem; color: var(--muted); margin: 0;">Fill in all required fields to register a new alumni record.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <form method="POST" action="/my-profile" enctype="multipart/form-data" id="createForm" style="display:none;">
+        <!-- ===== PHOTO UPLOAD ===== -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </div>
+                    <span class="card-title">Alumni Photo</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                    <div class="photo-preview-wrap">
+                        <div class="photo-preview" id="photoPreview">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#aab8c8" stroke-width="1.5" width="40" height="40">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <img id="photoImg" src="" alt="Preview" style="display:none;">
+                        </div>
+                        <div class="photo-upload-actions">
+                            <label for="photo" class="upload-photo-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                Upload Photo
+                            </label>
+                            <input type="file" id="photo" name="photo" accept="image/*" style="display:none;" onchange="previewPhoto(this)">
+                            <button type="button" class="remove-photo-btn" id="removePhoto" style="display:none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                                    <path d="M10 11v6"/><path d="M14 11v6"/>
+                                </svg>
+                                Remove
+                            </button>
+                            <p class="photo-hint">JPG, PNG, GIF up to 5MB. Recommended: square photo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PERSONAL INFORMATION ===== -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <span class="card-title">Personal Information</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="field-group full">
+                        <label class="field-label">Student Number <span class="req">*</span></label>
+                        <div class="stud-num-wrap">
+                            <span class="stud-prefix">TAL-</span>
+                            <input type="text"
+                                   name="stud_num"
+                                   class="field-input"
+                                   placeholder="2023-00238"
+                                   required
+                                   pattern="\d{4}-\d{5}"
+                                   maxlength="10"
+                                   title="Format: YYYY-XXXXX (e.g. 2023-00238)">
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Last Name <span class="req">*</span></label>
+                        <input type="text" name="last_name" class="field-input" placeholder="e.g. Santos" required>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">First Name <span class="req">*</span></label>
+                        <input type="text" name="first_name" class="field-input" placeholder="e.g. Juan" required>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Middle Name</label>
+                        <input type="text" name="middle_name" class="field-input" placeholder="e.g. Dela Cruz">
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Contact Number <span class="req">*</span></label>
+                        <input type="text" name="contact_num" class="field-input" placeholder="09123456789" required maxlength="11" pattern="09[0-9]{9}" title="Must be 11 digits starting with 09">
+                    </div>
+
+                    <div class="field-group full">
+                        <label class="field-label">Address <span class="req">*</span></label>
+                        <input type="text" name="address" class="field-input" placeholder="e.g. Brgy. Bantug, Talavera, Nueva Ecija" required>
+                    </div>
+
+                    <div class="field-group full">
+                        <label class="field-label">Email Address <span class="req">*</span></label>
+                        <input type="email" name="email" class="field-input" value="{{ alumni.email or '' }}" placeholder="e.g. juan.santos@email.com" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== EDUCATION INFORMATION ===== -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    <span class="card-title">Education Information</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="field-group">
+                        <label class="field-label">Program <span class="req">*</span></label>
+                        <select name="program" id="program" class="field-input" required>
+                            <option value="">Select Program</option>
+                            <option value="BSIT">BSIT</option>
+                            <option value="BSBA">BSBA</option>
+                            <option value="BEED">BEED</option>
+                        </select>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Major <span class="req">*</span></label>
+                        <select name="major" id="major" class="field-input" required>
+                            <option value="">Select Major</option>
+                        </select>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Graduation Date</label>
+                        <input type="date" name="graduation_date" class="field-input" max="{{ now.strftime('%Y-%m-%d') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== EMPLOYMENT DETAILS ===== -->
+        <div class="card" id="employmentCard">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" width="16" height="16">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                    </div>
+                    <span class="card-title">Employment Details</span>
+                    <span class="emp-badge" id="empCount">0 job(s)</span>
+                </div>
+            </div>
+
+            <!-- Overall employment status -->
+            <div class="form-grid" style="padding-bottom:0;">
+                <div class="field-group">
+                    <label class="field-label">Employment Status <span class="req">*</span></label>
+                    <select name="employment_status" id="employment_status" class="field-input" required>
+                        <option value="">Select Status</option>
+                        <option value="Employed">Employed</option>
+                        <option value="Unemployed">Unemployed</option>
+                        <option value="Self-Employed">Self-Employed</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Job entries container -->
+            <div id="jobEntriesContainer" style="display:none; padding: 0 18px;">
+                <div class="jobs-list" id="jobsList">
+                    <!-- Job entries injected by JS -->
+                </div>
+                <button type="button" class="add-job-btn" id="addJobBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Another Job
+                </button>
+            </div>
+            <div style="height:18px;"></div>
+        </div>
+
+        <!-- ===== SUBMIT ===== -->
+        <div class="actions">
+            <button type="button" class="btn-cancel" onclick="cancelCreateForm()">Cancel</button>
+            <button type="submit" class="btn-save" id="submitBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Save Alumni Record
+            </button>
+        </div>
+    </form>
+    {% endif %}
+
+</div>
+
+<!-- REQUEST UPDATE MODAL -->
+<div class="modal-overlay" id="requestModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title">Request Profile Update</span>
+            <button class="modal-close" onclick="closeRequestModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-msg">
+                You are requesting permission to update your alumni profile. The <strong>Admin</strong> will be notified and must approve your request before you can make changes.
+            </p>
+            <p class="modal-msg" style="margin-top:-10px; font-size:0.82rem;">
+                Once approved, you will be able to update your contact details and employment information.
+            </p>
+            <div class="field-group" style="margin-bottom:16px;">
+                <label class="field-label">Reason for Update (optional)</label>
+                <textarea id="updateReason" class="field-input" rows="3" placeholder="e.g. Changed job, updated address..." style="resize:vertical;"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeRequestModal()">Cancel</button>
+                <button class="btn-request" onclick="submitUpdateRequest()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    Send Request
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dynamic major loading based on selected program
+document.addEventListener('DOMContentLoaded', function() {
+    const programSelect = document.getElementById('program');
+    if (programSelect) {
+        programSelect.addEventListener('change', function() {
+            const selectedProgram = this.value;
+            const majorSelect = document.getElementById('major');
+            
+            // Clear current majors
+            majorSelect.innerHTML = '<option value="">Select Major</option>';
+            
+            if (selectedProgram) {
+                // Define majors for each program
+                const majors = {
+                    'BSIT': ['Web System Technology', 'Database System Technology'],
+                    'BSBA': ['Marketing Management'],
+                    'BEED': ['Basic Education']
+                };
+                
+                // Add majors for selected program
+                if (majors[selectedProgram]) {
+                    majors[selectedProgram].forEach(major => {
+                        const option = document.createElement('option');
+                        option.value = major;
+                        option.textContent = major;
+                        majorSelect.appendChild(option);
+                    });
+                }
+            }
+        });
+    }
+});
+
+// Handle employment status change
+document.addEventListener('DOMContentLoaded', function() {
+    const employmentStatus = document.getElementById('employment_status');
+    if (employmentStatus) {
+        employmentStatus.addEventListener('change', function () {
+            toggleJobs(this.value);
+        });
+        // Initialize on page load
+        toggleJobs(employmentStatus.value);
+    }
+    
+    // Add job button functionality
+    const addJobBtn = document.getElementById('addJobBtn');
+    if (addJobBtn) {
+        addJobBtn.addEventListener('click', addJob);
+    }
+});
+
+// Remove photo functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const removePhoto = document.getElementById('removePhoto');
+    if (removePhoto) {
+        removePhoto.addEventListener('click', function() {
+            const photoInput = document.getElementById('photo');
+            const photoImg = document.getElementById('photoImg');
+            const photoPreview = document.getElementById('photoPreview');
+            
+            if (photoInput) { photoInput.value = ''; }
+            if (photoImg) { 
+                photoImg.src = ''; 
+                photoImg.style.display = 'none'; 
+            }
+            if (photoPreview) {
+                const svg = photoPreview.querySelector('svg');
+                if (svg) svg.style.display = '';
+                photoPreview.classList.remove('has-photo');
+            }
+            this.style.display = 'none';
+        });
+    }
+});
+
+// Modal click outside to close
+document.addEventListener('DOMContentLoaded', function() {
+    const requestModal = document.getElementById('requestModal');
+    if (requestModal) {
+        requestModal.addEventListener('click', function(e) {
+            if (e.target === this) closeRequestModal();
+        });
+    }
+    
+    // Show success/error messages with SweetAlert
+    var error = '{{ error|e if error else "" }}';
+    var success = '{{ success|e if success else "" }}';
+    
+    if (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error,
+            confirmButtonColor: '#0d2137'
+        });
+    }
+    
+    if (success) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: success,
+            confirmButtonColor: '#0d2137'
+        });
+    }
+});
+</script>
+
+<script>
+// All remaining JavaScript functions properly wrapped
+function cancelCreateForm() {
+    document.getElementById('createFormHeader').style.display = 'none';
+    document.getElementById('createForm').style.display = 'none';
+    // Reset form
+    const createForm = document.getElementById('createForm');
+    if (createForm) {
+        createForm.reset();
+    }
+    // Clear photo preview
+    const photoImg = document.getElementById('photoImg');
+    const photoPreview = document.getElementById('photoPreview');
+    const removePhoto = document.getElementById('removePhoto');
+    
+    if (photoImg) {
+        photoImg.src = '';
+        photoImg.style.display = 'none';
+    }
+    if (photoPreview) {
+        const svg = photoPreview.querySelector('svg');
+        if (svg) svg.style.display = '';
+        photoPreview.classList.remove('has-photo');
+    }
+    if (removePhoto) {
+        removePhoto.style.display = 'none';
+    }
+    // Clear jobs container
+    const jobsContainer = document.getElementById('jobsList');
+    if (jobsContainer) {
+        jobsContainer.innerHTML = '';
+    }
+    // Reset job counter
+    jobCounter = 0;
+    updateEmpCount();
+    // Hide add job button
+    const addJobBtn = document.getElementById('addJobBtn');
+    if (addJobBtn) {
+        addJobBtn.style.display = 'none';
+    }
+}
+
+// Auto-check if request is approved (every 10 seconds)
+let hasBeenApproved = false; // Flag to prevent multiple approvals
+
+async function checkApprovalStatus() {
+    try {
+        const res = await fetch('/api/my-update-status');
+        const data = await res.json();
+        
+        if (data.status === 'approved' && !hasBeenApproved) {
+            hasBeenApproved = true; // Set flag to prevent multiple triggers
+            stopApprovalCheck();
+            
+            // Show the approved notification popup (bottom-right)
+            // DO NOT show form automatically - only show notification
+            const notification = document.getElementById('approvedNotification');
+            if (notification) {
+                notification.style.display = 'block';
+            }
+            
+            // Show a small success notification
+            Swal.fire({
+                icon: 'success',
+                title: 'Request Approved!',
+                text: 'Your update request has been approved. Click the notification at the bottom-right to update your information.',
+                confirmButtonColor: '#0d2137',
+                timer: 4000,
+                timerProgressBar: true
+            });
+            
+        } else if (data.status === 'rejected') {
+            stopApprovalCheck();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Request Rejected',
+                text: 'Your update request was rejected by the Admin. ' + (data.admin_note ? 'Reason: ' + data.admin_note : ''),
+                confirmButtonColor: '#0d2137'
+            });
+        } else if (data.status === 'completed') {
+            // Request was already completed, stop checking
+            stopApprovalCheck();
+        }
+    } catch(e) {
+        // Silently handle network errors
+        console.log('Status check failed:', e);
+    }
+}
+
+// Check on page load - but don't start polling automatically
+// Only check once to see if there's already an approved request
+checkApprovalStatus();
+// Only start polling if user has sent a request and it's pending
+// Polling will be started by submitUpdateRequest() function
+
+function requestUpdate() {
+    document.getElementById('requestModal').classList.add('open');
+}
+
+function closeRequestModal() {
+    document.getElementById('requestModal').classList.remove('open');
+}
+
+async function submitUpdateRequest() {
+    const reason = document.getElementById('updateReason').value.trim();
+    
+    if (!reason) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Reason Required',
+            text: 'Please provide a reason for your update request.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+
+    // Show loading
+    Swal.fire({
+        title: 'Sending Request...',
+        text: 'Please wait while we send your update request to the admin.',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const res = await fetch('/request-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason })
+        });
+        const data = await res.json();
+        closeRequestModal();
+        
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Request Sent!',
+                text: 'Your update request has been sent to the Admin for approval. You will be notified once it is reviewed.',
+                confirmButtonColor: '#0d2137'
+            });
+            // Start checking for approval status
+            startApprovalCheck();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Request Failed',
+                text: data.error || 'Failed to send request. Please try again.',
+                confirmButtonColor: '#0d2137'
+            });
+        }
+    } catch(e) {
+        closeRequestModal();
+        Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'Network error. Please try again.',
+            confirmButtonColor: '#0d2137'
+        });
+    }
+}
+
+function cancelEdit() {
+    document.getElementById('viewMode').style.display = 'block';
+    document.getElementById('editMode').style.display = 'none';
+}
+
+let approvalCheckInterval = null;
+
+function startApprovalCheck() {
+    // Check immediately
+    checkApprovalStatus();
+    // Then every 10 seconds
+    approvalCheckInterval = setInterval(checkApprovalStatus, 10000);
+}
+
+function stopApprovalCheck() {
+    if (approvalCheckInterval) {
+        clearInterval(approvalCheckInterval);
+        approvalCheckInterval = null;
+    }
+}
+
+// Start checking for approval if there might be a pending request
+// REMOVED: Don't start polling automatically to prevent infinite loops
+// {% if alumni and alumni.get('has_record', False) %}
+// startApprovalCheck();
+// {% endif %}
+
+let jobCounter = 0;
+
+function updateEmpCount() {
+    const jobsList = document.getElementById('jobsList');
+    const empCount = document.getElementById('empCount');
+    const entries = jobsList ? jobsList.querySelectorAll('.job-entry').length : 0;
+    if (empCount) empCount.textContent = entries + ' job(s)';
+}
+
+// Score-Based Degree Relevance AI Scanner - Fixed Logic
+function analyzeDegreeRelevance(program, major, jobTitle, employmentSector) {
+    if (!program || !jobTitle) return 'Not Related';
+    
+    // Enhanced text normalization
+    const normalizedProgram = normalizeText(program);
+    const normalizedMajor = normalizeText(major);
+    const normalizedJobTitle = normalizeText(jobTitle);
+    const normalizedSector = normalizeText(employmentSector);
+    
+    // Extract keywords for analysis
+    const jobKeywords = extractKeywords(normalizedJobTitle);
+    const sectorKeywords = extractKeywords(normalizedSector);
+    const programKeywords = extractKeywords(normalizedProgram);
+    const majorKeywords = extractKeywords(normalizedMajor);
+    
+    // Calculate relevance score
+    let score = 0;
+    let debugInfo = {
+        program: normalizedProgram,
+        major: normalizedMajor,
+        jobTitle: normalizedJobTitle,
+        sector: normalizedSector,
+        jobKeywords: jobKeywords,
+        sectorKeywords: sectorKeywords,
+        matches: [],
+        finalScore: 0
+    };
+    
+    // BEED Analysis - High Priority for Education
+    if (normalizedProgram.includes('beed') || normalizedProgram.includes('education')) {
+        score = calculateBEEDScore(normalizedMajor, jobKeywords, sectorKeywords, majorKeywords, debugInfo);
+    }
+    // BSIT Analysis - High Priority for IT/Software
+    else if (normalizedProgram.includes('bsit') || normalizedProgram.includes('information technology')) {
+        score = calculateBSITScore(normalizedMajor, jobKeywords, sectorKeywords, majorKeywords, debugInfo);
+    }
+    // BSBA Analysis - High Priority for Business
+    else if (normalizedProgram.includes('bsba') || normalizedProgram.includes('business administration')) {
+        score = calculateBSBAScore(normalizedMajor, jobKeywords, sectorKeywords, majorKeywords, debugInfo);
+    }
+    
+    debugInfo.finalScore = score;
+    console.log('Degree Relevance Analysis:', debugInfo);
+    
+    // Apply scoring thresholds
+    if (score >= 80) return 'Directly Related';
+    if (score >= 40) return 'Slightly Related';
+    return 'Not Related';
+}
+
+// Enhanced text normalization
+function normalizeText(text) {
+    if (!text) return '';
+    return text.toLowerCase()
+              .trim()
+              .replace(/[^a-z\s]/g, '') // Remove special characters
+              .replace(/\s+/g, ' ') // Normalize spaces
+              .trim();
+}
+
+// Extract keywords with better filtering
+function extractKeywords(text) {
+    if (!text) return [];
+    return text.split(' ')
+              .filter(word => word.length > 2) // Filter out very short words
+              .filter(word => !['the', 'and', 'for', 'with', 'that', 'this', 'from', 'have', 'they', 'were', 'been', 'their', 'what', 'when', 'where', 'will'].includes(word)); // Remove common words
+}
+
+// BEED Score Calculation - Fixed Logic
+function calculateBEEDScore(major, jobKeywords, sectorKeywords, majorKeywords, debugInfo) {
+    let score = 0;
+    
+    // HIGH PRIORITY - Direct Education Matches (80+ points)
+    const directlyRelatedKeywords = [
+        'teacher', 'teaching', 'educator', 'instructor', 'professor', 'tutor',
+        'faculty', 'academic', 'school', 'education', 'training', 'coordinator',
+        'preschool', 'elementary', 'guidance', 'counselor', 'curriculum', 'development',
+        'educational', 'administrator', 'principal', 'head', 'aide', 'lecturer'
+    ];
+    
+    // Check for direct matches in job title
+    for (const keyword of directlyRelatedKeywords) {
+        for (const jobKeyword of jobKeywords) {
+            if (jobKeyword.includes(keyword) || keyword.includes(jobKeyword)) {
+                score += 85; // High score for direct matches
+                debugInfo.matches.push({type: 'direct', keyword: keyword, match: jobKeyword, points: 85});
+                console.log(`BEED Direct Match: ${keyword} matches ${jobKeyword} - Score: ${score}`);
+                return score; // Early return for strong matches
+            }
+        }
+    }
+    
+    // MEDIUM PRIORITY - Education-adjacent roles (40-79 points)
+    const slightlyRelatedKeywords = [
+        'office', 'administrative', 'assistant', 'childcare', 'daycare', 'staff',
+        'support', 'secretary', 'clerk', 'librarian', 'aid'
+    ];
+    
+    for (const keyword of slightlyRelatedKeywords) {
+        for (const jobKeyword of jobKeywords) {
+            if (jobKeyword.includes(keyword) || keyword.includes(jobKeyword)) {
+                score += 45;
+                debugInfo.matches.push({type: 'slight', keyword: keyword, match: jobKeyword, points: 45});
+                console.log(`BEED Slight Match: ${keyword} matches ${jobKeyword} - Score: ${score}`);
+            }
+        }
+    }
+    
+    // SECTOR BONUS - Education sector adds points
+    for (const sectorKeyword of sectorKeywords) {
+        if (sectorKeyword.includes('education') || sectorKeyword.includes('school') || sectorKeyword.includes('academic')) {
+            score += 20;
+            debugInfo.matches.push({type: 'sector', keyword: sectorKeyword, points: 20});
+            console.log(`BEED Sector Bonus: ${sectorKeyword} - Score: ${score}`);
+        }
+    }
+    
+    // MAJOR BONUS - Basic Education major
+    if (major.includes('basic') || major.includes('education')) {
+        score += 15;
+        debugInfo.matches.push({type: 'major', keyword: major, points: 15});
+        console.log(`BEED Major Bonus: ${major} - Score: ${score}`);
+    }
+    
+    return score;
+}
+
+// BSIT Score Calculation - Fixed Logic
+function calculateBSITScore(major, jobKeywords, sectorKeywords, majorKeywords, debugInfo) {
+    let score = 0;
+    
+    // HIGH PRIORITY - Direct IT/Software Matches (80+ points)
+    const directlyRelatedKeywords = [
+        'software', 'developer', 'engineer', 'programmer', 'web', 'frontend', 'backend',
+        'fullstack', 'stack', 'database', 'admin', 'administrator', 'data', 'analyst',
+        'system', 'systems', 'analyst', 'support', 'technical', 'it', 'information',
+        'technology', 'network', 'networking', 'cyber', 'security', 'mobile', 'application',
+        'app', 'cloud', 'devops', 'testing', 'qa', 'quality', 'assurance', 'ui', 'ux',
+        'user', 'interface', 'experience', 'computer', 'technician', 'specialist', 'staff'
+    ];
+    
+    // Check for direct matches in job title
+    for (const keyword of directlyRelatedKeywords) {
+        for (const jobKeyword of jobKeywords) {
+            if (jobKeyword.includes(keyword) || keyword.includes(jobKeyword)) {
+                score += 85;
+                debugInfo.matches.push({type: 'direct', keyword: keyword, match: jobKeyword, points: 85});
+                console.log(`BSIT Direct Match: ${keyword} matches ${jobKeyword} - Score: ${score}`);
+                return score; // Early return for strong matches
+            }
+        }
+    }
+    
+    // MEDIUM PRIORITY - Office/Admin roles (40-79 points)
+    const slightlyRelatedKeywords = [
+        'office', 'administrative', 'assistant', 'encoder', 'clerk', 'customer', 'service',
+        'representative', 'virtual', 'assistant', 'operations', 'staff', 'bpo', 'agent',
+        'documentation', 'support'
+    ];
+    
+    for (const keyword of slightlyRelatedKeywords) {
+        for (const jobKeyword of jobKeywords) {
+            if (jobKeyword.includes(keyword) || keyword.includes(jobKeyword)) {
+                score += 45;
+                debugInfo.matches.push({type: 'slight', keyword: keyword, match: jobKeyword, points: 45});
+                console.log(`BSIT Slight Match: ${keyword} matches ${jobKeyword} - Score: ${score}`);
+            }
+        }
+    }
+    
+    // SECTOR BONUS - IT sector
+    for (const sectorKeyword of sectorKeywords) {
+        if (sectorKeyword.includes('it') || sectorKeyword.includes('technology') || sectorKeyword.includes('software')) {
+            score += 20;
+            debugInfo.matches.push({type: 'sector', keyword: sectorKeyword, points: 20});
+            console.log(`BSIT Sector Bonus: ${sectorKeyword} - Score: ${score}`);
+        }
+    }
+    
+    return score;
+}
+
+// BSBA Score Calculation - Fixed Logic
+function calculateBSBAScore(major, jobKeywords, sectorKeywords, majorKeywords, debugInfo) {
+    let score = 0;
+    
+    // HIGH PRIORITY - Direct Business Matches (80+ points)
+    const directlyRelatedKeywords = [
+        'marketing', 'sales', 'business', 'finance', 'financial', 'accounting', 'manager',
+        'management', 'brand', 'officer', 'executive', 'director', 'supervisor',
+        'consultant', 'entrepreneur', 'owner', 'operations', 'development', 'hr',
+        'human', 'resources', 'resource', 'personnel', 'recruitment', 'training',
+        'compensation', 'benefits', 'employee', 'relations', 'digital', 'social', 'media'
+    ];
+    
+    // Check for direct matches in job title
+    for (const keyword of directlyRelatedKeywords) {
+        for (const jobKeyword of jobKeywords) {
+            if (jobKeyword.includes(keyword) || keyword.includes(jobKeyword)) {
+                score += 85;
+                debugInfo.matches.push({type: 'direct', keyword: keyword, match: jobKeyword, points: 85});
+                console.log(`BSBA Direct Match: ${keyword} matches ${jobKeyword} - Score: ${score}`);
+                return score; // Early return for strong matches
+            }
+        }
+    }
+    
+    // MEDIUM PRIORITY - Office/Admin roles (40-79 points)
+    const slightlyRelatedKeywords = [
+        'office', 'administrative', 'assistant', 'cashier', 'customer', 'service',
+        'representative', 'clerk', 'staff', 'support', 'receptionist'
+    ];
+    
+    for (const keyword of slightlyRelatedKeywords) {
+        for (const jobKeyword of jobKeywords) {
+            if (jobKeyword.includes(keyword) || keyword.includes(jobKeyword)) {
+                score += 45;
+                debugInfo.matches.push({type: 'slight', keyword: keyword, match: jobKeyword, points: 45});
+                console.log(`BSBA Slight Match: ${keyword} matches ${jobKeyword} - Score: ${score}`);
+            }
+        }
+    }
+    
+    // SECTOR BONUS - Business sector
+    for (const sectorKeyword of sectorKeywords) {
+        if (sectorKeyword.includes('business') || sectorKeyword.includes('marketing') || sectorKeyword.includes('finance')) {
+            score += 20;
+            debugInfo.matches.push({type: 'sector', keyword: sectorKeyword, points: 20});
+            console.log(`BSBA Sector Bonus: ${sectorKeyword} - Score: ${score}`);
+        }
+    }
+    
+    return score;
+}
+
+function autoScanDegreeRelevance(jobBlock) {
+    const programSelect = document.getElementById('program');
+    const majorSelect = document.getElementById('major');
+    
+    if (!programSelect || !jobBlock) return;
+    
+    const jobTitleInput = jobBlock.querySelector('input[name="job_title[]"]');
+    const sectorInput = jobBlock.querySelector('input[name="employment_sector[]"]');
+    const relevanceSelect = jobBlock.querySelector('select[name="degree_relevance_to_work[]"]');
+    
+    if (!jobTitleInput || !relevanceSelect) return;
+    
+    const program = programSelect.value;
+    const major = majorSelect ? majorSelect.value : '';
+    const jobTitle = jobTitleInput.value;
+    const sector = sectorInput ? sectorInput.value : '';
+    
+    // Only scan if we have enough data
+    if (program && jobTitle && jobTitle.length >= 3) {
+        const relevance = analyzeDegreeRelevance(program, major, jobTitle, sector);
+        
+        // Auto-fill the dropdown
+        relevanceSelect.value = relevance;
+        
+        // Show enhanced live feedback
+        showLiveRelevanceFeedback(jobBlock, relevance, program, jobTitle);
+    } else {
+        // Clear feedback if insufficient data
+        clearRelevanceFeedback(jobBlock);
+    }
+}
+
+function showLiveRelevanceFeedback(jobBlock, relevance, program, jobTitle) {
+    // Remove existing feedback
+    const existingFeedback = jobBlock.querySelector('.relevance-feedback');
+    if (existingFeedback) existingFeedback.remove();
+    
+    // Create enhanced feedback with context
+    const feedback = document.createElement('div');
+    feedback.className = 'relevance-feedback';
+    
+    // Enhanced styling with better visual hierarchy
+    const bgColor = relevance === 'Directly Related' ? '#d1f2eb' : relevance === 'Slightly Related' ? '#fff3cd' : '#f8d7da';
+    const textColor = relevance === 'Directly Related' ? '#0f5132' : relevance === 'Slightly Related' ? '#856404' : '#721c24';
+    const borderColor = relevance === 'Directly Related' ? '#badbcc' : relevance === 'Slightly Related' ? '#ffeaa7' : '#f5c2c7';
+    
+    feedback.style.cssText = `
+        font-size: 0.8rem;
+        margin-top: 6px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        background: ${bgColor};
+        color: ${textColor};
+        border: 1px solid ${borderColor};
+        font-weight: 500;
+        line-height: 1.4;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    `;
+    
+    // Enhanced feedback message with context
+    const programName = program.split(' ')[0] || program;
+    feedback.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${textColor}" stroke-width="2">
+                ${relevance === 'Directly Related' ? '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>' : 
+                  relevance === 'Slightly Related' ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' :
+                  '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+            </svg>
+            <div>
+                <div style="font-weight: 600;">AI Analysis Result</div>
+                <div style="font-size: 0.75rem; opacity: 0.9; margin-top: 2px;">
+                    Your job "${jobTitle}" appears <strong>${relevance.toLowerCase()}</strong> to your ${programName} degree
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const relevanceSelect = jobBlock.querySelector('select[name="degree_relevance_to_work[]"]');
+    if (relevanceSelect) {
+        relevanceSelect.parentNode.appendChild(feedback);
+        
+        // Auto-hide feedback after 5 seconds (increased for better readability)
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.style.opacity = '0';
+                feedback.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    if (feedback.parentNode) feedback.remove();
+                }, 300);
+            }
+        }, 5000);
+    }
+}
+
+function clearRelevanceFeedback(jobBlock) {
+    const existingFeedback = jobBlock.querySelector('.relevance-feedback');
+    if (existingFeedback) {
+        existingFeedback.style.opacity = '0';
+        existingFeedback.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+            if (existingFeedback.parentNode) existingFeedback.remove();
+        }, 300);
+    }
+}
+
+function attachJobBlockListeners(jobBlock) {
+    if (!jobBlock) return;
+    
+    const jobTitleInput = jobBlock.querySelector('input[name="job_title[]"]');
+    const sectorInput = jobBlock.querySelector('input[name="employment_sector[]"]');
+    const relevanceSelect = jobBlock.querySelector('select[name="degree_relevance_to_work[]"]');
+    
+    // Attach listeners for auto-scanning
+    if (jobTitleInput) {
+        jobTitleInput.addEventListener('input', () => autoScanDegreeRelevance(jobBlock));
+        jobTitleInput.addEventListener('change', () => autoScanDegreeRelevance(jobBlock));
+    }
+    
+    if (sectorInput) {
+        sectorInput.addEventListener('input', () => autoScanDegreeRelevance(jobBlock));
+        sectorInput.addEventListener('change', () => autoScanDegreeRelevance(jobBlock));
+    }
+    
+    // Handle "Let AI decide" selection
+    if (relevanceSelect) {
+        relevanceSelect.addEventListener('change', function() {
+            if (this.value === 'Let AI decide') {
+                autoScanDegreeRelevance(jobBlock);
+            }
+        });
+    }
+}
+
+function initializeDegreeRelevanceScanner() {
+    // Attach to existing job blocks
+    document.querySelectorAll('.job-block, .job-entry').forEach(attachJobBlockListeners);
+    
+    // Attach to program/major changes
+    const programSelect = document.getElementById('program');
+    const majorSelect = document.getElementById('major');
+    
+    if (programSelect) {
+        programSelect.addEventListener('change', () => {
+            // Re-scan all job blocks when program changes
+            document.querySelectorAll('.job-block, .job-entry').forEach(autoScanDegreeRelevance);
+        });
+    }
+    
+    if (majorSelect) {
+        majorSelect.addEventListener('change', () => {
+            // Re-scan all job blocks when major changes
+            document.querySelectorAll('.job-block, .job-entry').forEach(autoScanDegreeRelevance);
+        });
+    }
+}
+
+function createJobEntry(index) {
+    const entry = document.createElement('div');
+    entry.className = 'job-entry';
+    entry.dataset.index = index;
+    entry.innerHTML = '\
+        <div class="job-entry-header">\
+            <span class="job-entry-label">Job #' + index + '</span>\
+            <button type="button" class="remove-job-btn" onclick="removeJobEntry(this)">\
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">\
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>\
+                </svg>\
+                Remove\
+            </button>\
+        </div>\
+        <div class="job-entry-grid">\
+            <div class="field-group">\
+                <label class="field-label">Job Title</label>\
+                <input type="text"\
+                       name="job_title[]"\
+                       class="field-input"\
+                       data-field="job_title"\
+                       placeholder="e.g. Software Engineer"\
+                       autocomplete="off">\
+            </div>\
+            <div class="field-group">\
+                <label class="field-label">Employment Sector</label>\
+                <input type="text"\
+                       name="employment_sector[]"\
+                       class="field-input"\
+                       data-field="employment_sector"\
+                       placeholder="e.g. Government, Private">\
+            </div>\
+            <div class="field-group full">\
+                <label class="field-label">Degree Relevance</label>\
+                <select name="degree_relevance_to_work[]" class="field-input">\
+                    <option value="">-- Select --</option>\
+                    <option value="Directly Related">Directly Related</option>\
+                    <option value="Moderately Related">Moderately Related</option>\
+                    <option value="Slightly Related">Slightly Related</option>\
+                    <option value="Not Related">Not Related</option>\
+                    <option value="Let AI decide">Let AI decide</option>\
+                </select>\
+            </div>\
+        </div>\
+    ';
+    
+    // Attach listeners to the new job block
+    setTimeout(() => {
+        attachJobBlockListeners(entry);
+        autoScanDegreeRelevance(entry);
+    }, 100);
+    
+    return entry;
+}
+
+function addJob() {
+    jobCounter++;
+    const entry = createJobEntry(jobCounter);
+    const jobsList = document.getElementById('jobsList');
+    if (jobsList) jobsList.appendChild(entry);
+    updateEmpCount();
+    renumberJobs();
+}
+
+// Exposed globally for inline onclick
+window.removeJobEntry = function (btn) {
+    const entry = btn.closest('.job-entry');
+    if (entry) {
+        entry.style.animation = 'none';
+        entry.style.opacity = '0';
+        entry.style.transform = 'translateY(-8px)';
+        entry.style.transition = 'opacity 0.2s, transform 0.2s';
+        setTimeout(function () {
+            entry.remove();
+            renumberJobs();
+            updateEmpCount();
+        }, 200);
+    }
+};
+
+function renumberJobs() {
+    document.querySelectorAll('.job-entry').forEach(function (entry, i) {
+        const label = entry.querySelector('.job-entry-label');
+        if (label) label.textContent = 'Job #' + (i + 1);
+    });
+}
+
+function toggleJobs(status) {
+    const jobEntriesContainer = document.getElementById('jobEntriesContainer');
+    const jobsList = document.getElementById('jobsList');
+    const addJobBtn = document.getElementById('addJobBtn');
+    
+    if (!jobEntriesContainer) return;
+    const isUnemployed = (status === 'Unemployed');
+
+    if (isUnemployed) {
+        jobEntriesContainer.style.display = 'none';
+        if (jobsList) jobsList.innerHTML = '';
+        jobCounter = 0;
+        updateEmpCount();
+    } else {
+        jobEntriesContainer.style.display = 'block';
+        // If no jobs yet, add one automatically
+        if (jobsList && jobsList.querySelectorAll('.job-entry').length === 0) {
+            addJob();
+        }
+    }
+}
+
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: 'Photo file is too large. Maximum size is 5MB.',
+                confirmButtonColor: '#0d2137'
+            });
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const photoImg = document.getElementById('photoImg');
+            const photoPreview = document.getElementById('photoPreview');
+            const removePhoto = document.getElementById('removePhoto');
+            
+            if (photoImg) {
+                photoImg.src = e.target.result;
+                photoImg.style.display = 'block';
+            }
+            if (photoPreview) {
+                photoPreview.querySelector('svg').style.display = 'none';
+                photoPreview.classList.add('has-photo');
+            }
+            if (removePhoto) {
+                removePhoto.style.display = 'inline-flex';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function showAddRecordForm() {
+    // Show confirmation dialog before showing form
+    Swal.fire({
+        title: 'Create Your Alumni Profile',
+        html: 'Please complete your alumni profile information below.<br><br>' +
+              '<small style="color: #6b7a8d;">This will create your official alumni record in the system.</small>',
+        icon: 'info',
+        confirmButtonColor: '#0d2137',
+        confirmButtonText: 'Start Creating Profile',
+        showCancelButton: true,
+        cancelButtonColor: '#6b7a8d',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('createFormHeader').style.display = 'block';
+            document.getElementById('createForm').style.display = 'block';
+            // Scroll to header
+            document.getElementById('createFormHeader').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+}
+
+// SweetAlert2 Logout Confirmation
+function handleLogout(event) {
+    event.preventDefault();
+    
+    Swal.fire({
+        title: 'Logout Confirmation',
+        text: 'Are you sure you want to logout from the system?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#0d2137',
+        cancelButtonColor: '#6b7a8d',
+        confirmButtonText: 'Yes, Logout',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with logout
+            window.location.href = '/logout';
+        }
+        // If cancelled, stay on current page (do nothing)
+    });
+}
+
+// SweetAlert2 Cancel Edit Confirmation
+function handleCancelEdit() {
+    Swal.fire({
+        title: 'Discard Changes?',
+        text: 'Any unsaved changes will be lost.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#0d2137',
+        cancelButtonColor: '#6b7a8d',
+        confirmButtonText: 'Yes, Cancel',
+        cancelButtonText: 'Continue Editing'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Close form and hide edit mode
+            cancelEdit();
+        }
+        // If cancelled, remain on form (do nothing)
+    });
+}
+
+// SweetAlert2 Save Changes Confirmation
+function handleSaveChanges() {
+    Swal.fire({
+        title: 'Confirm Update',
+        text: 'Are you sure you want to save and update your alumni information?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0d2137',
+        cancelButtonColor: '#6b7a8d',
+        confirmButtonText: 'Yes, Save Changes',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Continue with form submission
+            submitUpdateForm();
+        }
+        // If cancelled, stay on form (do nothing)
+    });
+}
+
+// Function to submit the update form after confirmation
+function submitUpdateForm() {
+    const updateForm = document.getElementById('updateForm');
+    if (!updateForm) return;
+    
+    // Comprehensive form validation
+    const studNum = updateForm.querySelector('input[name="stud_num"]').value.trim();
+    const lastName = updateForm.querySelector('input[name="last_name"]').value.trim();
+    const firstName = updateForm.querySelector('input[name="first_name"]').value.trim();
+    const email = updateForm.querySelector('input[name="email"]').value.trim();
+    const contact = updateForm.querySelector('input[name="contact_num"]').value.trim();
+    const program = updateForm.querySelector('select[name="program"]').value;
+    const major = updateForm.querySelector('select[name="major"]').value;
+    const empStatus = updateForm.querySelector('select[name="employment_status"]').value;
+    const graduationDate = updateForm.querySelector('input[name="graduation_date"]');
+    
+    // Validate required fields
+    if (!studNum) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Student number is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!/^\d{4}-\d{5}$/.test(studNum)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Student number must be in format YYYY-XXXXX (e.g., 2023-00238).',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!lastName) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Last name is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!firstName) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'First name is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!email) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Email address is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please enter a valid email address.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!contact) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Contact number is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!/^(09)\d{9}$/.test(contact.replace(/\D/g, ''))) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Contact number must be 11 digits starting with 09.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!program) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Degree program is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!major) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Major is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    if (!empStatus) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Employment status is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return;
+    }
+    
+    // Validate Graduation Date if provided
+    if (graduationDate && graduationDate.value) {
+        const selectedDate = new Date(graduationDate.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate > today) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Graduation Date cannot be greater than current date.',
+                confirmButtonColor: '#0d2137'
+            });
+            return;
+        }
+    }
+    
+    // Validate employment details if not unemployed
+    if (empStatus !== 'Unemployed') {
+        const jobTitles = updateForm.querySelectorAll('input[name="job_title[]"]');
+        let hasValidJob = false;
+        
+        jobTitles.forEach((jobTitle, index) => {
+            if (jobTitle.value.trim()) {
+                hasValidJob = true;
+            }
+        });
+        
+        if (!hasValidJob && jobTitles.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please provide at least one job title for your employment status.',
+                confirmButtonColor: '#0d2137'
+            });
+            return;
+        }
+    }
+    
+    // Show loading state
+    Swal.fire({
+        title: 'Saving Changes...',
+        text: 'Please wait while we update your information.',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    const formData = new FormData(updateForm);
+    
+    fetch('/my-profile', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide the approved notification
+            hideApprovedNotification();
+            
+            // Hide the edit form immediately
+            const editMode = document.getElementById('editMode');
+            if (editMode) {
+                editMode.style.display = 'none';
+            }
+            
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Record Successfully Updated',
+                text: 'Your alumni information has been updated successfully.',
+                confirmButtonColor: '#0d2137'
+            }).then(() => {
+                // Force page reload to show updated data
+                window.location.href = '/my-profile?success=1';
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: data.error || 'Failed to update profile. Please try again.',
+                confirmButtonColor: '#0d2137'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'Network error occurred. Please try again.',
+            confirmButtonColor: '#0d2137'
+        });
+    });
+}
+
+function showToast(msg, type) {
+    const toast = document.createElement('div');
+    toast.style.cssText = '\
+        position: fixed; bottom: 24px; right: 24px; z-index: 999;\
+        background: ' + (type === 'success' ? '#1e6b3c' : '#b22222') + ';\
+        color: #fff; padding: 12px 20px; border-radius: 8px;\
+        font-size: 0.88rem; font-weight: 500;\
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);\
+        max-width: 340px; line-height: 1.5;\
+    ';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+// Approved notification functions
+function hideApprovedNotification() {
+    const notification = document.getElementById('approvedNotification');
+    if (notification) {
+        notification.style.display = 'none';
+    }
+}
+
+function openAlumniForm() {
+    // Hide the notification
+    hideApprovedNotification();
+    
+    // Hide the view mode
+    const viewMode = document.getElementById('viewMode');
+    if (viewMode) {
+        viewMode.style.display = 'none';
+    }
+    
+    // Show the edit mode
+    const editMode = document.getElementById('editMode');
+    if (editMode) {
+        editMode.style.display = 'block';
+    }
+    
+    // Scroll to form
+    if (editMode) {
+        editMode.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle update form submission with confirmation
+    const updateForm = document.getElementById('updateForm');
+    const saveChangesBtn = document.getElementById('saveChangesBtn');
+    if (updateForm && saveChangesBtn) {
+        // Prevent default form submission
+        updateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+        
+        // Add click handler to save button for confirmation
+        saveChangesBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleSaveChanges();
+        });
+    }
+    
+    // Initialize Degree Relevance Scanner
+    initializeDegreeRelevanceScanner();
+    
+    // Handle employment status change and other DOMContentLoaded events
+    const employmentStatus = document.getElementById('employment_status');
+    if (employmentStatus) {
+        employmentStatus.addEventListener('change', function () {
+            toggleJobs(this.value);
+        });
+        // Initialize on page load
+        toggleJobs(employmentStatus.value);
+    }
+    
+    // Add job button functionality
+    const addJobBtn = document.getElementById('addJobBtn');
+    if (addJobBtn) {
+        addJobBtn.addEventListener('click', addJob);
+    }
+    
+    // Remove photo functionality
+    const removePhoto = document.getElementById('removePhoto');
+    if (removePhoto) {
+        removePhoto.addEventListener('click', function() {
+            const photoInput = document.getElementById('photo');
+            const photoImg = document.getElementById('photoImg');
+            const photoPreview = document.getElementById('photoPreview');
+            
+            if (photoInput) { photoInput.value = ''; }
+            if (photoImg) { 
+                photoImg.src = ''; 
+                photoImg.style.display = 'none'; 
+            }
+            if (photoPreview) {
+                const svg = photoPreview.querySelector('svg');
+                if (svg) svg.style.display = '';
+                photoPreview.classList.remove('has-photo');
+            }
+            this.style.display = 'none';
+        });
+    }
+    
+    // Approved notification click handler
+    const approvedNotification = document.getElementById('approvedNotification');
+    if (approvedNotification) {
+        approvedNotification.addEventListener('click', openAlumniForm);
+    }
+    
+    // Modal click outside to close
+    const requestModal = document.getElementById('requestModal');
+    if (requestModal) {
+        requestModal.addEventListener('click', function(e) {
+            if (e.target === this) closeRequestModal();
+        });
+    }
+    
+    // Add form validation and submission handling for create form
+    const createForm = document.getElementById('createForm');
+    if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const studNum = document.querySelector('input[name="stud_num"]').value.trim();
+            const lastName = document.querySelector('input[name="last_name"]').value.trim();
+            const firstName = document.querySelector('input[name="first_name"]').value.trim();
+            const address = document.querySelector('input[name="address"]').value.trim();
+            const email = document.querySelector('input[name="email"]').value.trim();
+            const contact = document.querySelector('input[name="contact_num"]').value.trim();
+            const program = document.querySelector('select[name="program"]').value;
+            const major = document.querySelector('select[name="major"]').value;
+            const empStatus = document.querySelector('select[name="employment_status"]').value;
+            
+            // Validation
+            if (!studNum) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Student number is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!/^\d{4}-\d{5}$/.test(studNum)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Student number must be in format YYYY-XXXXX (e.g., 2023-00238).',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!lastName) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Last name is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!firstName) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'First name is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!address) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Address is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!email) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Email is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Please enter a valid email address.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!contact || !/^(09)\d{9}$/.test(contact.replace(/\D/g, ''))) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Contact number must be 11 digits starting with 09.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!program) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Program is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!major) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Major is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            if (!empStatus) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Employment status is required.',
+                    confirmButtonColor: '#0d2137'
+                });
+                return false;
+            }
+            
+            // Validate graduation date if provided
+            const gradDate = document.querySelector('input[name="graduation_date"]').value;
+            if (gradDate) {
+                const selectedDate = new Date(gradDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate > today) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Graduation Date cannot be greater than current date.',
+                        confirmButtonColor: '#0d2137'
+                    });
+                    return false;
+                }
+            }
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Creating Profile...',
+                text: 'Please wait while we save your alumni profile.',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Submit form via AJAX
+            const formData = new FormData(this);
+            
+            fetch('/my-profile', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Profile Created Successfully!',
+                    text: 'Your alumni profile has been created and is now visible.',
+                    confirmButtonColor: '#0d2137'
+                }).then(() => {
+                    // Reload page to show updated profile
+                    window.location.href = '/my-profile?success=1';
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Creation Failed',
+                    text: 'Failed to create profile. Please try again.',
+                    confirmButtonColor: '#0d2137'
+                });
+            });
+            
+            return false;
+        });
+    }
+});
+</script>
+
+{% if error %}
+<script>Swal.fire({icon:'error',title:'Error',text:'{{ error|e }}',confirmButtonColor:'#0d2137'});</script>
+{% endif %}
+{% if success %}
+<script>Swal.fire({icon:'success',title:'Success!',text:'{{ success|e }}',confirmButtonColor:'#0d2137'});</script>
+{% endif %}
+
+</body>
+</html>

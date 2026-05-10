@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Registration — NEUST</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --navy:       #0d2137;
+            --gold:       #c9a84c;
+            --gold-light: #e8c97a;
+            --cream:      #f9f6f0;
+            --white:      #ffffff;
+            --red:        #b22222;
+            --green:      #1e6b3c;
+            --text:       #1a1a2e;
+            --muted:      #6b7a8d;
+            --border:     #dde3ee;
+            --shadow:     0 4px 24px rgba(13,33,55,0.10);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: var(--navy);
+            font-family: 'Source Sans 3', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Decorative background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(201,168,76,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 20%, rgba(201,168,76,0.06) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--red) 0%, var(--gold) 50%, var(--red) 100%);
+        }
+
+        .page-wrapper {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            width: 100%;
+            max-width: 520px;
+            overflow: hidden;
+            animation: slideUp 0.5s cubic-bezier(.22,.68,0,1.2) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* HEADER */
+        .card-header {
+            background: var(--navy);
+            padding: 32px 36px 28px;
+            text-align: center;
+            position: relative;
+        }
+
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .logo-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+
+        .logo-wrap img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 8px rgba(201,168,76,0.3));
+        }
+
+        .card-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1.5rem;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
+        }
+
+        .card-header p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.82rem;
+            font-weight: 300;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        /* BODY */
+        .card-body {
+            padding: 32px 36px 36px;
+        }
+
+        
+        /* ALERTS */
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.87rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: #fff5f5;
+            border: 1px solid #fcc;
+            color: var(--red);
+        }
+
+        .alert-success {
+            background: #f0faf4;
+            border: 1px solid #a8d5bc;
+            color: var(--green);
+        }
+
+        .alert svg { flex-shrink: 0; margin-top: 1px; }
+
+        /* SECTION LABEL */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* FORM */
+        .field-group {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .field-label .req { color: var(--red); margin-left: 2px; }
+
+        .field-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: #fafbfd;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .field-input:focus {
+            border-color: var(--navy);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(13,33,55,0.08);
+        }
+
+        .field-input:read-only {
+            background: #f2f4f8;
+            color: var(--muted);
+            cursor: not-allowed;
+        }
+
+        .stud-prefix {
+            display: flex;
+            align-items: center;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fafbfd;
+            transition: all 0.2s;
+        }
+
+        .stud-prefix:focus-within {
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px rgba(13,33,55,0.08);
+        }
+
+        .stud-prefix-tag {
+            padding: 10px 12px;
+            background: var(--navy);
+            color: var(--gold);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .stud-prefix input {
+            border: none;
+            background: transparent;
+            flex: 1;
+            padding: 10px 14px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text);
+            outline: none;
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* PASSWORD */
+        .pw-wrap {
+            position: relative;
+        }
+
+        .pw-wrap input { padding-right: 42px; }
+
+        .pw-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            padding: 2px;
+            display: flex;
+            align-items: center;
+        }
+
+        .pw-toggle:hover { color: var(--navy); }
+
+        /* ALUMNI INFO PREVIEW */
+        .alumni-preview {
+            background: linear-gradient(135deg, #f0f5ff 0%, #e8f0fe 100%);
+            border: 1px solid #c5d5f8;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .alumni-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--navy);
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .alumni-preview-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .alumni-preview-email {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .verified-badge {
+            margin-left: auto;
+            background: var(--green);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        /* BUTTONS */
+        .btn-primary {
+            width: 100%;
+            padding: 12px 20px;
+            background: var(--navy);
+            color: var(--gold);
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            letter-spacing: 0.03em;
+        }
+
+        .btn-primary:hover {
+            background: #1a3a5c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(13,33,55,0.25);
+        }
+
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 11px 20px;
+            background: transparent;
+            color: var(--navy);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.87rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-top: 10px;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--navy);
+            background: #f0f4ff;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 22px 0;
+            position: relative;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: calc(50% - 30px);
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .back-link {
+            text-align: center;
+            margin-top: 18px;
+        }
+
+        .back-link a {
+            color: var(--navy);
+            font-size: 0.82rem;
+            font-weight: 500;
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .back-link a:hover { opacity: 1; }
+
+        .pw-strength {
+            height: 3px;
+            border-radius: 3px;
+            background: var(--border);
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .pw-strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .pw-strength-text {
+            font-size: 0.72rem;
+            margin-top: 3px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <div class="logo-wrap">
+                <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" alt="NEUST Logo">
+            </div>
+            <h1>Alumni Registration</h1>
+            <p>Nueva Ecija University of Science and Technology</p>
+        </div>
+
+        <div class="card-body">
+
+            
+            {% if error %}
+            <div class="alert alert-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if success %}
+            <div class="alert alert-success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ success }} <a href="/" style="font-weight:700; color:inherit; margin-left:4px;">Log in now →</a>
+            </div>
+            {% endif %}
+
+            <!-- STEP 1: Create Account -->
+            <form method="POST" action="/register" id="createForm">
+                <input type="hidden" name="step" value="create">
+                <input type="hidden" name="alumni_id" value="">
+
+                <div class="section-label">Personal Information</div>
+
+                <div class="field-group">
+                    <label class="field-label">Last Name <span class="req">*</span></label>
+                    <input type="text" name="last_name" class="field-input" placeholder="Last Name" required>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">First Name <span class="req">*</span></label>
+                    <input type="text" name="first_name" class="field-input" placeholder="First Name" required>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Middle Name</label>
+                    <input type="text" name="middle_name" class="field-input" placeholder="Middle Name (optional)">
+                </div>
+
+                <div class="section-label">Account Information</div>
+
+                <div class="field-group">
+                    <label class="field-label">Email Address <span class="req">*</span></label>
+                    <input type="email" name="email" class="field-input"
+                           value="{{ alumni.email if alumni else '' }}"
+                           placeholder="your@email.com" required autocomplete="off">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Password <span class="req">*</span></label>
+                    <div class="pw-wrap">
+                        <input type="password" name="password" id="pwInput" class="field-input"
+                               placeholder="At least 6 characters" required minlength="6"
+                               oninput="checkStrength(this.value)">
+                        <button type="button" class="pw-toggle" onclick="togglePw('pwInput','eyeA')">
+                            <svg id="eyeA" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                    <div class="pw-strength"><div class="pw-strength-bar" id="strengthBar"></div></div>
+                    <div class="pw-strength-text" id="strengthText"></div>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Confirm Password <span class="req">*</span></label>
+                    <div class="pw-wrap">
+                        <input type="password" name="confirm_password" id="pwConfirm" class="field-input"
+                               placeholder="Re-enter password" required>
+                        <button type="button" class="pw-toggle" onclick="togglePw('pwConfirm','eyeB')">
+                            <svg id="eyeB" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top:8px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Create My Account
+                </button>
+            </form>
+
+            <div class="back-link">
+                <a href="/">← Back to Login</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePw(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    } else {
+        input.type = 'password';
+        icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    }
+}
+
+function checkStrength(val) {
+    const bar = document.getElementById('strengthBar');
+    const txt = document.getElementById('strengthText');
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const levels = [
+        { w: '20%', c: '#e53e3e', t: 'Very weak' },
+        { w: '40%', c: '#dd6b20', t: 'Weak' },
+        { w: '60%', c: '#d69e2e', t: 'Fair' },
+        { w: '80%', c: '#38a169', t: 'Good' },
+        { w: '100%',c: '#2b6cb0', t: 'Strong' },
+    ];
+
+    const level = levels[Math.min(score - 1, 4)] || { w: '0%', c: '#ccc', t: '' };
+    bar.style.width = val.length === 0 ? '0%' : level.w;
+    bar.style.background = level.c;
+    txt.textContent = val.length === 0 ? '' : level.t;
+    txt.style.color = level.c;
+}
+
+// Check for error messages on page load and show with SweetAlert
+document.addEventListener('DOMContentLoaded', function() {
+    {% if error %}
+    Swal.fire({
+        icon: 'error',
+        title: 'Registration Error',
+        text: '{{ error }}',
+        confirmButtonColor: '#0d2137',
+        confirmButtonText: 'OK'
+    });
+    {% endif %}
+    
+    {% if success %}
+    Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful!',
+        text: '{{ success }}',
+        confirmButtonColor: '#0d2137',
+        confirmButtonText: 'Go to Login',
+        allowOutsideClick: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/';
+        }
+    });
+    {% endif %}
+});
+
+// Enhanced form validation with real-time email checking
+document.getElementById('createForm').addEventListener('submit', function(e) {
+    const email = document.querySelector('input[name="email"]').value.trim();
+    const password = document.querySelector('input[name="password"]').value;
+    const confirm = document.querySelector('input[name="confirm_password"]').value;
+    
+    // Client-side validation
+    if (!email) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Email is required.',
+            confirmButtonColor: '#0d2137'
+        });
+        return false;
+    }
+    
+    if (!password || password.length < 6) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Password must be at least 6 characters.',
+            confirmButtonColor: '#0d2137'
+        });
+        return false;
+    }
+    
+    if (password !== confirm) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Passwords do not match.',
+            confirmButtonColor: '#0d2137'
+        });
+        return false;
+    }
+    
+    // Email format validation
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please enter a valid email address.',
+            confirmButtonColor: '#0d2137'
+        });
+        return false;
+    }
+    
+    return true;
+});
+</script>
+</body>
+</html>

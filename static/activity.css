@@ -1,0 +1,342 @@
+/* ================================================================
+   activity.css — NEUST Activity Logs Page
+   Fully aligned with records.css design language
+   ================================================================ */
+
+/* ===== BASE ===== */
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #f4f8ff;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ================================================================
+   SIDEBAR
+   ================================================================ */
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, #0d6efd, #1e88ff);
+    padding: 15px;
+    transition: all 0.3s ease;
+    color: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.sidebar.collapsed {
+    width: 60px;
+    padding: 15px 5px;
+}
+
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.sidebar-logo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
+
+.menu-title {
+    font-weight: bold;
+    font-size: 14px;
+    margin: 0;
+    color: white;
+}
+
+.sidebar.collapsed .menu-title {
+    display: none;
+}
+
+/* Sidebar menu items */
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin: 4px 0;
+    text-decoration: none;
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.menu:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.menu.active {
+    background: rgba(255,255,255,0.28);
+    font-weight: 600;
+}
+
+.menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.menu-icon svg {
+    display: block;
+    stroke: currentColor;
+}
+
+.menu-label {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Collapsed state */
+.sidebar.collapsed .menu-label {
+    display: none;
+}
+
+.sidebar.collapsed .menu {
+    justify-content: center;
+    padding: 10px;
+}
+
+.sidebar.collapsed .menu-icon {
+    width: 22px;
+    height: 22px;
+}
+
+/* ================================================================
+   SIDEBAR ARROW TOGGLE BUTTON
+   ================================================================ */
+.sidebar-toggle-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    transition: background 0.2s;
+    margin: 12px auto 0;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.sidebar-toggle-arrow:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-toggle-arrow .arrow-icon {
+    display: block;
+    stroke: white;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* When sidebar is expanded, arrow points left */
+.sidebar:not(.collapsed) .sidebar-toggle-arrow .arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* ================================================================
+   MAIN AREA
+   ================================================================ */
+.main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================================================================
+   TOPBAR
+   ================================================================ */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 12px 20px;
+    border-bottom: 3px solid #0d6efd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 9;
+}
+
+.topbar .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title {
+    font-size: 17px;
+    font-weight: bold;
+    color: #0d6efd;
+    margin: 0;
+}
+
+.topbar .right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.role-badge {
+    background: #e7f1ff;
+    color: #0d6efd;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.logout {
+    text-decoration: none;
+    background: #dc3545;
+    color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.logout:hover {
+    background: #bb2d3b;
+}
+
+/* ================================================================
+   CONTENT
+   ================================================================ */
+.content {
+    padding: 20px;
+    flex: 1;
+    overflow-x: hidden;
+}
+
+/* ================================================================
+   ACTIONS ROW
+   ================================================================ */
+.actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.actions-left {
+    display: flex;
+    align-items: center;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a2e4a;
+}
+
+.section-title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #e8f0fe;
+    flex-shrink: 0;
+}
+
+.section-title-icon svg {
+    stroke: #1a73e8;
+}
+
+/* ================================================================
+   TABLE CARD
+   ================================================================ */
+.table-card {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8edf3;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.records-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.records-table thead tr {
+    background: linear-gradient(135deg, #ddeaff, #e8f0fe);
+}
+
+.records-table th {
+    padding: 11px 12px;
+    text-align: left;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0d6efd;
+    white-space: nowrap;
+    border-bottom: 2px solid #cfe2ff;
+    letter-spacing: 0.2px;
+}
+
+.records-table td {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 13px;
+    color: #2d3e50;
+    white-space: nowrap;
+    border-bottom: 1px solid #f0f4fb;
+}
+
+.records-table tbody tr:hover {
+    background: #f4f8ff;
+    transition: background 0.15s;
+}
+
+.records-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 900px) {
+    .actions-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

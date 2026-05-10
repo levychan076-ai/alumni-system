@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alumni Registration - Alumni Tracking System</title>
+    <link rel="stylesheet" href="/static/login.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+    <div class="login-card">
+
+        <!-- LOGO + TITLE -->
+        <div class="login-header">
+            <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" alt="NEUST Logo" class="logo">
+            <div class="login-title-block">
+                <span class="login-school">Nueva Ecija University of Science and Technology</span>
+                <span class="login-subtitle">Talavera Academic Extension Campus</span>
+                <h1 class="login-system-title">Alumni<br>Registration</h1>
+            </div>
+        </div>
+
+        <div class="login-divider"></div>
+
+        <!-- REGISTRATION FORM -->
+        <form method="POST" action="/register">
+            {% if error %}
+            <div class="error-message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if success %}
+            <div class="success-message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                {{ success }}
+            </div>
+            {% endif %}
+
+            <input type="hidden" name="step" value="create">
+            <input type="hidden" name="alumni_id" value="">
+
+            <div class="field-group">
+                <label class="field-label">Last Name</label>
+                <div class="input-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <input type="text" name="last_name" class="field-input" placeholder="Enter your last name" required>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">First Name</label>
+                <div class="input-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <input type="text" name="first_name" class="field-input" placeholder="Enter your first name" required>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Middle Name</label>
+                <div class="input-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <input type="text" name="middle_name" class="field-input" placeholder="Enter your middle name (optional)">
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Email Address</label>
+                <div class="input-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <input type="email" name="email" class="field-input" placeholder="Enter your email address" required>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Password</label>
+                <div class="input-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <input type="password" name="password" class="field-input" placeholder="Enter your password (min 6 chars)" required minlength="6">
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Confirm Password</label>
+                <div class="input-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <input type="password" name="confirm_password" class="field-input" placeholder="Confirm your password" required>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="8.5" cy="7" r="4"/>
+                    <line x1="20" y1="8" x2="20" y2="14"/>
+                    <line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+                Create Account
+            </button>
+
+            <div class="register-link">
+                Already have an account? <a href="/login-alumni">Login</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+// Enhanced form validation with SweetAlert
+document.querySelector('form').addEventListener('submit', function(e) {
+    const password = document.querySelector('input[name="password"]').value;
+    const confirm = document.querySelector('input[name="confirm_password"]').value;
+    
+    if (password !== confirm) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Password Mismatch',
+            text: 'Passwords do not match. Please try again.',
+            confirmButtonColor: '#0d2137'
+        });
+        return false;
+    }
+    
+    if (password.length < 6) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Password Too Short',
+            text: 'Password must be at least 6 characters long.',
+            confirmButtonColor: '#0d2137'
+        });
+        return false;
+    }
+});
+
+// Show success message with SweetAlert
+document.addEventListener('DOMContentLoaded', function() {
+    {% if success %}
+    Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful!',
+        text: '{{ success }}',
+        confirmButtonColor: '#0d2137',
+        allowOutsideClick: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/login-alumni';
+        }
+    });
+    {% endif %}
+    
+    {% if error %}
+    Swal.fire({
+        icon: 'error',
+        title: 'Registration Error',
+        text: '{{ error }}',
+        confirmButtonColor: '#0d2137'
+    });
+    {% endif %}
+});
+</script>
+
+</body>
+</html>

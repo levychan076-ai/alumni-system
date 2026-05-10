@@ -1,0 +1,71 @@
+body {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    background: #f9f9f9;
+}
+
+.container {
+    display: flex;
+}
+
+
+.main {
+    flex: 1;
+}
+
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff3b0;
+    padding: 10px 20px;
+}
+
+.content {
+    padding: 20px;
+}
+
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+
+.employ-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.employ-table th {
+    background: #d9ecff;
+    padding: 10px;
+    text-align: left;
+}
+
+.employ-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.employ-table tr:hover {
+    background: #fff3b0;
+}
+
+
+.back-btn {
+    display: inline-block;
+    margin-top: 15px;
+    text-decoration: none;
+    background: #4dabf7;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.back-btn:hover {
+    background: #339af0;
+}

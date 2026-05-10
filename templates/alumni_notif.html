@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alumni Notifications — NEUST MGT</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='alumni_notif.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar collapsed" id="sidebar">
+
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" class="sidebar-logo">
+            <h2 class="menu-title">NEUST-MGT Alumni Record and Employment Tracking System</h2>
+        </div>
+
+        <a href="/dashboard" class="menu {% if request.path == '/dashboard' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+            </span>
+            <span class="menu-label">Dashboard</span>
+        </a>
+
+        <a href="/records" class="menu {% if request.path == '/records' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 3 17 8 12 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="13" y2="17"/>
+                </svg>
+            </span>
+            <span class="menu-label">Alumni Records</span>
+        </a>
+
+        <a href="/announcement" class="menu {% if request.path == '/announcement' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </span>
+            <span class="menu-label">Announcement</span>
+        </a>
+
+        <a href="/activity" class="menu {% if request.path == '/activity' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </span>
+            <span class="menu-label">Activity Logs</span>
+        </a>
+
+        {% if user_type == "Admin" %}
+        <a href="/alumni-notif" class="menu {% if request.path == '/alumni-notif' %}active{% endif %}">
+            <span class="menu-icon" style="position:relative;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="notif-dot" id="sidebarNotifDot" style="display:none;"></span>
+            </span>
+            <span class="menu-label">Alumni Notifications</span>
+        </a>
+        {% endif %}
+
+        <!-- ===== SIDEBAR ARROW TOGGLE ===== -->
+        <button class="sidebar-toggle-arrow" id="toggleBtn" aria-label="Toggle sidebar">
+            <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+
+    </div>
+    <!-- end .sidebar -->
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="left">
+                <h2 class="title">ALUMNI UPDATE NOTIFICATIONS</h2>
+            </div>
+            <div class="right">
+                <span class="role-badge">{{ user_type }}</span>
+                <button type="button" class="logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-card stat-pending">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-num">{{ pending_count or 0 }}</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-approved">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-num">{{ approved_count or 0 }}</span>
+                        <span class="stat-label">Approved</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-rejected">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-num">{{ rejected_count or 0 }}</span>
+                        <span class="stat-label">Rejected</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Filter -->
+            <div class="tab-filter">
+                <button class="tab-btn {% if filter_status == 'pending' or not filter_status %}active{% endif %}"
+                        onclick="filterNotifs('pending')">
+                    Pending
+                    {% if pending_count and pending_count > 0 %}
+                    <span class="tab-badge">{{ pending_count }}</span>
+                    {% endif %}
+                </button>
+                <button class="tab-btn {% if filter_status == 'approved' %}active{% endif %}"
+                        onclick="filterNotifs('approved')">Approved</button>
+                <button class="tab-btn {% if filter_status == 'rejected' %}active{% endif %}"
+                        onclick="filterNotifs('rejected')">Rejected</button>
+                <button class="tab-btn {% if filter_status == 'all' %}active{% endif %}"
+                        onclick="filterNotifs('all')">All</button>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notif-list" id="notifList">
+                {% if notifications %}
+                    {% for n in notifications %}
+                    <div class="notif-card {% if n.status == 'pending' %}notif-pending{% elif n.status == 'approved' %}notif-approved{% else %}notif-rejected{% endif %}"
+                         data-id="{{ n.id }}">
+
+                        <div class="notif-card-left">
+                            <div class="notif-avatar">
+                                {% if n.photo %}
+                                <img src="{{ url_for('static', filename='uploads/' ~ n.photo) }}" alt="photo">
+                                {% else %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#9aabbf" stroke-width="1.5" width="22" height="22">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="notif-card-body">
+                            <div class="notif-card-top">
+                                <div class="notif-name">{{ n.full_name }}</div>
+                                <span class="notif-status-badge notif-status-{{ n.status }}">{{ n.status | capitalize }}</span>
+                            </div>
+                            <div class="notif-stud-num">{{ n.stud_num if n.stud_num else '-' }}</div>
+                            <div class="notif-reason">
+                                <strong>Reason:</strong> {{ n.reason }}
+                            </div>
+                            <div class="notif-meta">
+                                <span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    Requested: {{ n.requested_at.strftime('%b %d, %Y %I:%M %p') if n.requested_at else '-' }}
+                                </span>
+                                {% if n.resolved_at %}
+                                <span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    Resolved: {{ n.resolved_at.strftime('%b %d, %Y %I:%M %p') }}
+                                </span>
+                                {% endif %}
+                                {% if n.resolved_by %}
+                                <span>By: {{ n.resolved_by }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if n.status == 'pending' %}
+                        <div class="notif-card-actions">
+                            <button class="notif-btn notif-approve"
+                                    onclick="resolveRequest({{ n.id }}, 'approved')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Approve
+                            </button>
+                            <button class="notif-btn notif-reject"
+                                    onclick="resolveRequest({{ n.id }}, 'rejected')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                                Reject
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="notif-card-actions">
+                            <span style="font-size:12px;color:#9aabbf;font-style:italic;">No action needed</span>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="notif-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <p>No notifications found.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Resolve Confirmation Modal -->
+<div id="resolveModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box" style="max-width:400px;">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <span class="modal-icon" id="resolveModalIcon"></span>
+                <h3 class="modal-title" id="resolveModalTitle">Confirm Action</h3>
+            </div>
+        </div>
+        <div style="padding:18px;">
+            <p id="resolveModalMsg" style="font-size:13.5px;color:#4a5e73;margin:0 0 14px;"></p>
+            <textarea id="resolveAdminNote" rows="3"
+                style="width:100%;padding:10px 12px;border:1px solid #d8e3ef;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;box-sizing:border-box;color:#1a2e4a;outline:none;"
+                placeholder="Optional admin note (visible to alumni)..."></textarea>
+        </div>
+        <div style="padding:0 18px 18px;display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="document.getElementById('resolveModal').style.display='none'"
+                style="padding:8px 18px;border:1px solid #d8e3ef;border-radius:7px;background:transparent;color:#7a8fa6;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
+                Cancel
+            </button>
+            <button id="resolveConfirmBtn"
+                style="padding:8px 20px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:white;">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+        </div>
+        <!-- end .content -->
+
+    </div>
+    <!-- end .main -->
+
+</div>
+<!-- end .container -->
+
+<script>
+// Page-specific functionality (sidebar handled by alumni_notif.js)
+
+let resolveId = null;
+let resolveAction = null;
+
+function filterNotifs(status) {
+    window.location.href = '/alumni-notif?status=' + status;
+}
+
+function resolveRequest(id, action) {
+    resolveId = id;
+    resolveAction = action;
+
+    const confirmBtn = document.getElementById('resolveConfirmBtn');
+
+    if (action === 'approved') {
+        Swal.fire({
+            title: 'Approve Update Request?',
+            text: 'Approving this request will allow the alumni to update their record. Continue?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#1a6b32',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Approve',
+            cancelButtonText: 'Cancel',
+            input: 'textarea',
+            inputPlaceholder: 'Optional admin note (visible to alumni)...',
+            inputAttributes: {
+                'aria-label': 'Type your note here'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                processResolveRequest(result.value || '');
+            }
+        });
+    } else {
+        Swal.fire({
+            title: 'Reject Update Request?',
+            text: 'This will reject the alumni\'s update request. The alumni will be notified.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#c0392b',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Reject',
+            cancelButtonText: 'Cancel',
+            input: 'textarea',
+            inputPlaceholder: 'Optional admin note (visible to alumni)...',
+            inputAttributes: {
+                'aria-label': 'Type your note here'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                processResolveRequest(result.value || '');
+            }
+        });
+    }
+}
+
+function processResolveRequest(note) {
+    const btn = document.getElementById('resolveConfirmBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+    }
+
+    fetch('/api/resolve-update-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: resolveId, action: resolveAction, note: note })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: `Update request has been ${resolveAction === 'approved' ? 'approved' : 'rejected'} successfully.`,
+                confirmButtonColor: '#0d2137'
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.error || 'Action failed.',
+                confirmButtonColor: '#0d2137'
+            });
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Confirm';
+            }
+        }
+    })
+    .catch(() => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'Network error. Please try again.',
+            confirmButtonColor: '#0d2137'
+        });
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Confirm';
+        }
+    });
+}
+
+document.getElementById('resolveConfirmBtn').addEventListener('click', function () {
+    if (!resolveId || !resolveAction) return;
+
+    const note = document.getElementById('resolveAdminNote').value.trim();
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    fetch('/api/resolve-update-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: resolveId, action: resolveAction, note: note })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('resolveModal').style.display = 'none';
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Action failed.');
+            btn.disabled = false;
+            btn.textContent = 'Confirm';
+        }
+    })
+    .catch(() => {
+        alert('Network error. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Confirm';
+    });
+});
+
+// Real-time polling for new notifications (every 20s)
+function pollNewNotifs() {
+    fetch('/api/pending-notif-count')
+        .then(r => r.json())
+        .then(data => {
+            const dot = document.querySelector('.notif-dot');
+            if (dot) dot.style.display = data.count > 0 ? 'block' : 'none';
+            // Update title badge
+            const badge = document.querySelector('.tab-badge');
+            if (badge) badge.textContent = data.count;
+        }).catch(() => {});
+}
+setInterval(pollNewNotifs, 20000);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// Logout confirmation function
+function confirmLogout() {
+    Swal.fire({
+        title: 'Logout?',
+        text: 'Are you sure you want to logout?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Logout',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // User confirmed logout - redirect to logout route
+            window.location.href = '/logout';
+        }
+        // If user clicks "Cancel", stay on current page (do nothing)
+    });
+}
+
+// Logout button event listener
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            confirmLogout();
+        });
+    }
+});
+</script>
+<script src="{{ url_for('static', filename='alumni_notif.js') }}"></script>
+</body>
+</html>

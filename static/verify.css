@@ -1,0 +1,101 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: linear-gradient(to bottom right, #fff3b0, #d9ecff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* VERIFY CARD */
+.verify-card {
+    background: #ffffff;
+    padding: 45px 35px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    width: 380px;
+    text-align: center;
+}
+
+/* TITLE */
+.verify-card h2 {
+    margin-bottom: 25px;
+    color: #2c2c2c;
+    font-size: 26px;
+    letter-spacing: 1px;
+}
+
+/* INPUT */
+.verify-card input[type="text"] {
+    width: 85%;
+    padding: 12px 14px;
+    margin: 10px auto;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: center; /* perfect for OTP */
+    letter-spacing: 3px; /* makes OTP look clean */
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+/* INPUT FOCUS */
+.verify-card input:focus {
+    border-color: #4dabf7;
+    box-shadow: 0 0 5px rgba(77,171,247,0.4);
+}
+
+/* BUTTON */
+.verify-card button {
+    width: 85%;
+    padding: 12px;
+    margin-top: 18px;
+    background: #4dabf7;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* BUTTON HOVER */
+.verify-card button:hover {
+    background: #3a9be0;
+    transform: translateY(-1px);
+}
+
+/* BUTTON CLICK */
+.verify-card button:active {
+    transform: scale(0.98);
+}
+
+/* OPTIONAL TEXT (if you add resend later) */
+.verify-card p {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #444;
+}
+
+/* RESPONSIVE */
+@media (max-width: 420px) {
+    .verify-card {
+        width: 90%;
+        padding: 35px 20px;
+    }
+
+    .verify-card input,
+    .verify-card button {
+        width: 95%;
+    }
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Education Records</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='educ.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+
+    <div class="main">
+
+        <div class="topbar">
+            <h2>Education Records</h2>
+            <a href="/records?search={{ search }}&page={{ page }}" class="back-btn">⬅ Back</a>
+        </div>
+
+        <div class="content">
+            <div class="card">
+
+                <table class="educ-table">
+                    <tr>
+                        <th>Program</th>
+                        <th>Major</th>
+                        <th>Graduation Date</th>
+                    </tr>
+
+                    {% if educ %}
+                        {% for e in educ %}
+                        <tr>
+                            <td>{{ e.program }}</td>
+                            <td>{{ e.major }}</td>
+                            <td>{{ e.graduation_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align:center;">No education record found</td>
+                        </tr>
+                    {% endif %}
+
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

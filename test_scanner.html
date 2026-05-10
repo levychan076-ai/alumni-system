@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Degree Relevance Scanner</title>
+</head>
+<body>
+    <h1>Test Degree Relevance Scanner</h1>
+    
+    <div>
+        <label>Program:</label>
+        <select id="program">
+            <option value="">Select Program</option>
+            <option value="BEED">BEED</option>
+            <option value="BSIT">BSIT</option>
+            <option value="BSBA">BSBA</option>
+        </select>
+    </div>
+    
+    <div>
+        <label>Major:</label>
+        <select id="major">
+            <option value="">Select Major</option>
+            <option value="Basic Education">Basic Education</option>
+            <option value="Software Development">Software Development</option>
+            <option value="Business Management">Business Management</option>
+        </select>
+    </div>
+    
+    <div>
+        <label>Job Title:</label>
+        <input type="text" id="jobTitle" placeholder="e.g. Teacher">
+    </div>
+    
+    <div>
+        <label>Sector:</label>
+        <input type="text" id="sector" placeholder="e.g. Government">
+    </div>
+    
+    <div>
+        <label>Degree Relevance:</label>
+        <select id="degree_relevance">
+            <option value="">Select or let AI decide</option>
+            <option value="Directly Related">Directly Related</option>
+            <option value="Moderately Related">Moderately Related</option>
+            <option value="Slightly Related">Slightly Related</option>
+            <option value="Not Related">Not Related</option>
+        </select>
+    </div>
+    
+    <div id="badge" style="display: none; padding: 5px; margin: 10px 0; border-radius: 4px; font-weight: bold;">
+        <span class="relevance-label"></span>
+    </div>
+    
+    <button onclick="runTest()">Test Scanner</button>
+    <button onclick="runAllTests()">Run All Test Cases</button>
+    
+    <div id="results" style="margin-top: 20px; padding: 10px; background: #f5f5f5;"></div>
+
+<script>
+// Copy the scanner logic here for testing
+const normalize = (text) => {
+    return (text || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s]/g, "");
+};
+
+const checkHardOverrides = (normalizedProgram, normalizedMajor, normalizedJob, normalizedSector) => {
+    console.log("=== CHECKING HARD OVERRIDES ===");
+    console.log("Program:", normalizedProgram);
+    console.log("Major:", normalizedMajor);
+    console.log("Job:", normalizedJob);
+    console.log("Sector:", normalizedSector);
+    
+    // BEED + Teacher/Educator = Directly Related (HARDEST OVERRIDE)
+    if (
+        (normalizedProgram.includes("beed") || normalizedMajor.includes("basic education")) &&
+        (
+            normalizedJob.includes("teacher") ||
+            normalizedJob.includes("educator") ||
+            normalizedJob.includes("instructor") ||
+            normalizedJob.includes("tutor") ||
+            normalizedJob.includes("faculty") ||
+            normalizedJob.includes("lecturer") ||
+            normalizedJob.includes("professor") ||
+            normalizedJob.includes("teaching")
+        )
+    ) {
+        console.log("✓ HARD OVERRIDE MATCHED: BEED + Teacher = Directly Related");
+        return "Directly Related";
+    }
+    
+    // BSIT + Software/IT jobs = Directly Related
+    if (
+        normalizedProgram.includes("bsit") &&
+        (
+            normalizedJob.includes("software") ||
+            normalizedJob.includes("developer") ||
+            normalizedJob.includes("programmer") ||
+            normalizedJob.includes("engineer") ||
+            normalizedJob.includes("it") ||
+            normalizedJob.includes("analyst") ||
+            normalizedJob.includes("technical")
+        )
+    ) {
+        console.log("✓ HARD OVERRIDE MATCHED: BSIT + IT Job = Directly Related");
+        return "Directly Related";
+    }
+    
+    // BSBA + Business/Marketing jobs = Directly Related
+    if (
+        normalizedProgram.includes("bsba") &&
+        (
+            normalizedJob.includes("marketing") ||
+            normalizedJob.includes("business") ||
+            normalizedJob.includes("sales") ||
+            normalizedJob.includes("manager") ||
+            normalizedJob.includes("account") ||
+            normalizedJob.includes("finance")
+        )
+    ) {
+        console.log("✓ HARD OVERRIDE MATCHED: BSBA + Business Job = Directly Related");
+        return "Directly Related";
+    }
+    
+    console.log("✗ No hard overrides matched");
+    return null;
+};
+
+const calculateRelevanceScore = (normalizedProgram, normalizedMajor, normalizedJob, normalizedSector) => {
+    console.log("=== CALCULATING RELEVANCE SCORE ===");
+    
+    let score = 0;
+    const matchedKeywords = [];
+    
+    // Education-related keywords
+    const educationKeywords = [
+        "teacher", "teaching", "educator", "education", "instructor",
+        "faculty", "lecturer", "professor", "tutor", "academic", "school"
+    ];
+    
+    // IT-related keywords
+    const itKeywords = [
+        "software", "developer", "programmer", "engineer", "it", "technical",
+        "analyst", "system", "network", "database", "web", "application"
+    ];
+    
+    // Business-related keywords
+    const businessKeywords = [
+        "marketing", "business", "sales", "manager", "account", "finance",
+        "admin", "office", "clerk", "staff", "supervisor"
+    ];
+    
+    // Check program relevance
+    if (normalizedProgram.includes("beed")) {
+        const educationMatches = educationKeywords.filter(keyword => 
+            normalizedJob.includes(keyword)
+        );
+        if (educationMatches.length > 0) {
+            score += 50;
+            matchedKeywords.push(...educationMatches);
+        }
+    }
+    
+    if (normalizedProgram.includes("bsit")) {
+        const itMatches = itKeywords.filter(keyword => 
+            normalizedJob.includes(keyword)
+        );
+        if (itMatches.length > 0) {
+            score += 50;
+            matchedKeywords.push(...itMatches);
+        }
+    }
+    
+    if (normalizedProgram.includes("bsba")) {
+        const businessMatches = businessKeywords.filter(keyword => 
+            normalizedJob.includes(keyword)
+        );
+        if (businessMatches.length > 0) {
+            score += 50;
+            matchedKeywords.push(...businessMatches);
+        }
+    }
+    
+    // Check major relevance
+    if (normalizedMajor.includes("basic education")) {
+        const educationMatches = educationKeywords.filter(keyword => 
+            normalizedJob.includes(keyword)
+        );
+        if (educationMatches.length > 0) {
+            score += 30;
+            matchedKeywords.push(...educationMatches);
+        }
+    }
+    
+    console.log("Matched Keywords:", matchedKeywords);
+    console.log("Final Score:", score);
+    
+    // Convert score to relevance level
+    if (score >= 70) return "Directly Related";
+    if (score >= 40) return "Moderately Related";
+    if (score >= 20) return "Slightly Related";
+    return "Not Related";
+};
+
+function testScanner(program, major, jobTitle, sector) {
+    console.log("\n=== STARTING DEGREE RELEVANCE SCAN ===");
+    
+    // DEBUG: Print raw values
+    console.log("RAW VALUES:");
+    console.log("Program:", program);
+    console.log("Major:", major);
+    console.log("Job Title:", jobTitle);
+    console.log("Sector:", sector);
+    
+    // Normalize all values
+    const normalizedProgram = normalize(program);
+    const normalizedMajor = normalize(major);
+    const normalizedJob = normalize(jobTitle);
+    const normalizedSector = normalize(sector);
+    
+    console.log("NORMALIZED VALUES:");
+    console.log("Normalized Program:", normalizedProgram);
+    console.log("Normalized Major:", normalizedMajor);
+    console.log("Normalized Job:", normalizedJob);
+    console.log("Normalized Sector:", normalizedSector);
+    
+    // Step 1: Check hard overrides first
+    const hardOverrideResult = checkHardOverrides(
+        normalizedProgram, normalizedMajor, normalizedJob, normalizedSector
+    );
+    
+    let finalResult;
+    if (hardOverrideResult) {
+        finalResult = hardOverrideResult;
+        console.log("✓ Using hard override result:", finalResult);
+    } else {
+        // Step 2: Use scoring system as fallback
+        finalResult = calculateRelevanceScore(
+            normalizedProgram, normalizedMajor, normalizedJob, normalizedSector
+        );
+        console.log("✓ Using scoring system result:", finalResult);
+    }
+    
+    console.log("FINAL RESULT:", finalResult);
+    console.log("=== SCAN COMPLETE ===\n");
+    
+    return finalResult;
+}
+
+function runTest() {
+    const program = document.getElementById('program').value;
+    const major = document.getElementById('major').value;
+    const jobTitle = document.getElementById('jobTitle').value;
+    const sector = document.getElementById('sector').value;
+    
+    const result = testScanner(program, major, jobTitle, sector);
+    
+    // Update UI
+    document.getElementById('degree_relevance').value = result;
+    const badge = document.getElementById('badge');
+    badge.style.display = 'block';
+    badge.querySelector('.relevance-label').textContent = 'AI: ' + result;
+    
+    // Update badge color
+    badge.className = '';
+    if (result === 'Directly Related') badge.style.backgroundColor = '#28a745';
+    else if (result === 'Moderately Related') badge.style.backgroundColor = '#17a2b8';
+    else if (result === 'Slightly Related') badge.style.backgroundColor = '#ffc107';
+    else if (result === 'Not Related') badge.style.backgroundColor = '#dc3545';
+    badge.style.color = 'white';
+}
+
+function runAllTests() {
+    const testCases = [
+        {
+            name: "CASE 1: BEED + Teacher",
+            program: "BEED",
+            major: "Basic Education", 
+            job: "Teacher",
+            sector: "Government",
+            expected: "Directly Related"
+        },
+        {
+            name: "CASE 2: BSIT + Software Engineer",
+            program: "BSIT",
+            major: "Software Development",
+            job: "Software Engineer", 
+            sector: "Private",
+            expected: "Directly Related"
+        },
+        {
+            name: "CASE 3: BSBA + Marketing Specialist",
+            program: "BSBA",
+            major: "Business Management",
+            job: "Marketing Specialist",
+            sector: "Private", 
+            expected: "Directly Related"
+        },
+        {
+            name: "CASE 4: BEED + Office Staff",
+            program: "BEED",
+            major: "Basic Education",
+            job: "Office Staff",
+            sector: "Government",
+            expected: "Slightly Related"
+        },
+        {
+            name: "CASE 5: BSIT + Farmer",
+            program: "BSIT", 
+            major: "Software Development",
+            job: "Farmer",
+            sector: "Agriculture",
+            expected: "Not Related"
+        }
+    ];
+    
+    let resultsHTML = "<h2>Test Results:</h2>";
+    let passed = 0;
+    let failed = 0;
+    
+    testCases.forEach(testCase => {
+        const result = testScanner(testCase.program, testCase.major, testCase.job, testCase.sector);
+        const status = result === testCase.expected ? "✅ PASS" : "❌ FAIL";
+        
+        if (result === testCase.expected) passed++;
+        else failed++;
+        
+        resultsHTML += `
+            <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">
+                <strong>${testCase.name}</strong><br>
+                Input: ${testCase.program} + ${testCase.major} + ${testCase.job} + ${testCase.sector}<br>
+                Expected: ${testCase.expected}<br>
+                Actual: ${result}<br>
+                Status: ${status}
+            </div>
+        `;
+    });
+    
+    resultsHTML += `
+        <div style="margin: 10px 0; padding: 10px; background: #e9ecef;">
+            <strong>Summary:</strong><br>
+            ✅ Passed: ${passed}<br>
+            ❌ Failed: ${failed}<br>
+            Total: ${passed + failed}
+        </div>
+    `;
+    
+    document.getElementById('results').innerHTML = resultsHTML;
+}
+</script>
+</body>
+</html>

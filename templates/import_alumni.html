@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulk Import Alumni</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='records.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div class="sidebar collapsed" id="sidebar">
+
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='images/PNG (transparent background).png') }}" class="sidebar-logo">
+            <h2 class="menu-title">NEUST-MGT Alumni Record and Employment Tracking System</h2>
+        </div>
+
+        <a href="/dashboard" class="menu {% if request.path == '/dashboard' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+            </span>
+            <span class="menu-label">Dashboard</span>
+        </a>
+
+        <a href="/records" class="menu {% if request.path == '/records' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 3 17 8 12 8"/>
+                    <line x1="9" y1="13" x2="15" y2="13"/>
+                    <line x1="9" y1="17" x2="13" y2="17"/>
+                </svg>
+            </span>
+            <span class="menu-label">Alumni Records</span>
+        </a>
+
+        <a href="/announcement" class="menu {% if request.path == '/announcement' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </span>
+            <span class="menu-label">Announcement</span>
+        </a>
+
+        <a href="/activity" class="menu {% if request.path == '/activity' %}active{% endif %}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </span>
+            <span class="menu-label">Activity Logs</span>
+        </a>
+
+        <button class="sidebar-toggle-arrow" id="toggleBtn" aria-label="Toggle sidebar">
+            <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+
+    </div>
+
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="left">
+                <h2 class="title">BULK IMPORT ALUMNI RECORDS</h2>
+            </div>
+            <div class="right">
+                <span class="role-badge">{{ user_type }}</span>
+                <button type="button" class="logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <!-- ===== IMPORT CONTAINER ===== -->
+            <div class="import-container">
+                <div class="import-header">
+                    <h3>Import Alumni Records from Spreadsheet</h3>
+                    <p class="import-description">
+                        Upload Excel (.xlsx, .xls) or CSV files containing alumni records. 
+                        The system will automatically validate and import the data.
+                    </p>
+                </div>
+
+                <!-- ===== DOWNLOAD TEMPLATE SECTION ===== -->
+                <div class="template-section">
+                    <div class="template-info">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download Import Template
+                        </h4>
+                        <p>Get the required Excel template with proper column headers and sample data format.</p>
+                    </div>
+                    <a href="/download-import-template" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download Template
+                    </a>
+                </div>
+
+                <!-- ===== FILE UPLOAD SECTION ===== -->
+                <div class="upload-section">
+                    <div class="upload-header">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Upload File
+                        </h4>
+                        <p>Supported formats: Excel (.xlsx, .xls) and CSV (.csv) files. Maximum file size: 16MB.</p>
+                    </div>
+
+                    <div class="upload-area" id="uploadArea">
+                        <form id="importForm" enctype="multipart/form-data">
+                            <div class="file-input-wrapper">
+                                <input type="file" id="fileInput" name="file" accept=".xlsx,.xls,.csv" required>
+                                <label for="fileInput" class="file-input-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    <span class="file-text">Click to browse or drag and drop file here</span>
+                                    <span class="file-hint">Excel (.xlsx, .xls) or CSV files only</span>
+                                </label>
+                            </div>
+                            
+                            <div class="upload-actions">
+                                <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    Upload & Preview
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="window.location.href='/records'">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                                        <line x1="18" y1="6" x2="6" y2="18"/>
+                                        <line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ===== PROGRESS INDICATOR ===== -->
+                <div class="progress-container" id="progressContainer" style="display: none;">
+                    <div class="progress-header">
+                        <h4>Processing File...</h4>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Uploading file...</div>
+                </div>
+
+                <!-- ===== PREVIEW SECTION ===== -->
+                <div class="preview-section" id="previewSection" style="display: none;">
+                    <div class="preview-header">
+                        <h4>Import Preview</h4>
+                        <div class="preview-stats" id="previewStats"></div>
+                    </div>
+                    
+                    <div class="preview-warnings" id="previewWarnings" style="display: none;">
+                        <h5>⚠️ Warnings:</h5>
+                        <ul id="warningsList"></ul>
+                    </div>
+
+                    <div class="preview-table-wrapper">
+                        <table class="preview-table" id="previewTable">
+                            <thead>
+                                <tr>
+                                    <th>Row</th>
+                                    <th>Student No.</th>
+                                    <th>Last Name</th>
+                                    <th>First Name</th>
+                                    <th>Email</th>
+                                    <th>Program</th>
+                                    <th>Major</th>
+                                    <th>Employment Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody">
+                                <!-- Preview data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="preview-actions">
+                        <button type="button" class="btn btn-success" id="confirmImportBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Confirm Import
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelImportBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+let currentFilePath = null;
+
+// Logout confirmation function
+function confirmLogout() {
+    Swal.fire({
+        title: 'Logout?',
+        text: 'Are you sure you want to logout?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Logout',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/logout';
+        }
+    });
+}
+
+// File input handling
+const fileInput = document.getElementById('fileInput');
+const fileLabel = document.querySelector('.file-input-label');
+const uploadBtn = document.getElementById('uploadBtn');
+const uploadArea = document.getElementById('uploadArea');
+const progressContainer = document.getElementById('progressContainer');
+const previewSection = document.getElementById('previewSection');
+
+fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        const fileName = file.name;
+        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+        
+        fileLabel.querySelector('.file-text').textContent = fileName;
+        fileLabel.querySelector('.file-hint').textContent = `Size: ${fileSize} MB`;
+        uploadBtn.disabled = false;
+        
+        // Add selected file class
+        fileLabel.classList.add('file-selected');
+    } else {
+        fileLabel.querySelector('.file-text').textContent = 'Click to browse or drag and drop file here';
+        fileLabel.querySelector('.file-hint').textContent = 'Excel (.xlsx, .xls) or CSV files only';
+        uploadBtn.disabled = true;
+        fileLabel.classList.remove('file-selected');
+    }
+});
+
+// Drag and drop handling
+uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('drag-over');
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+});
+
+uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        const event = new Event('change', { bubbles: true });
+        fileInput.dispatchEvent(event);
+    }
+});
+
+// Form submission
+document.getElementById('importForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    // Show progress
+    uploadArea.style.display = 'none';
+    progressContainer.style.display = 'block';
+    updateProgress(20, 'Uploading file...');
+    
+    fetch('/import-alumni', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        updateProgress(60, 'Processing file...');
+        
+        if (data.success) {
+            updateProgress(100, 'File processed successfully!');
+            
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                showPreview(data);
+            }, 1000);
+        } else {
+            progressContainer.style.display = 'none';
+            uploadArea.style.display = 'block';
+            
+            if (data.validation_errors && data.validation_errors.length > 0) {
+                showValidationErrors(data.validation_errors, data.warnings || []);
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.error || 'Failed to process file',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        }
+    })
+    .catch(error => {
+        progressContainer.style.display = 'none';
+        uploadArea.style.display = 'block';
+        Swal.fire({
+            title: 'Error!',
+            text: 'Network error. Please try again.',
+            icon: 'error',
+            confirmButtonColor: '#dc3545'
+        });
+    });
+});
+
+function updateProgress(percent, text) {
+    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('progressText').textContent = text;
+}
+
+function showPreview(data) {
+    currentFilePath = data.file_path;
+    
+    // Update stats
+    document.getElementById('previewStats').innerHTML = `
+        <span class="stat-item">Total Records: <strong>${data.total_records}</strong></span>
+        <span class="stat-item">Previewing: <strong>First 10 records</strong></span>
+    `;
+    
+    // Show warnings if any
+    if (data.warnings && data.warnings.length > 0) {
+        const warningsList = document.getElementById('warningsList');
+        warningsList.innerHTML = '';
+        data.warnings.forEach(warning => {
+            const li = document.createElement('li');
+            li.textContent = warning;
+            warningsList.appendChild(li);
+        });
+        document.getElementById('previewWarnings').style.display = 'block';
+    } else {
+        document.getElementById('previewWarnings').style.display = 'none';
+    }
+    
+    // Populate preview table
+    const tableBody = document.getElementById('previewTableBody');
+    tableBody.innerHTML = '';
+    
+    data.preview.forEach(record => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${record.row}</td>
+            <td>${record.stud_num}</td>
+            <td>${record.last_name}</td>
+            <td>${record.first_name}</td>
+            <td>${record.email}</td>
+            <td>${record.program}</td>
+            <td>${record.major}</td>
+            <td>${record.employment_status}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    previewSection.style.display = 'block';
+}
+
+function showValidationErrors(errors, warnings) {
+    let errorHtml = '<div class="validation-errors"><h4>❌ Validation Errors:</h4><ul>';
+    errors.forEach(error => {
+        errorHtml += `<li>${error}</li>`;
+    });
+    errorHtml += '</ul></div>';
+    
+    if (warnings.length > 0) {
+        errorHtml += '<div class="validation-warnings"><h4>⚠️ Warnings:</h4><ul>';
+        warnings.forEach(warning => {
+            errorHtml += `<li>${warning}</li>`;
+        });
+        errorHtml += '</ul></div>';
+    }
+    
+    Swal.fire({
+        title: 'Validation Errors Found',
+        html: errorHtml,
+        icon: 'error',
+        width: '600px',
+        confirmButtonColor: '#dc3545'
+    });
+}
+
+// Confirm import
+document.getElementById('confirmImportBtn').addEventListener('click', function() {
+    Swal.fire({
+        title: 'Confirm Import?',
+        text: 'This will import all valid records into the database. Existing records with duplicate student numbers will be skipped.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Import Records',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            performImport();
+        }
+    });
+});
+
+function performImport() {
+    const btn = document.getElementById('confirmImportBtn');
+    btn.disabled = true;
+    btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Importing...
+    `;
+    
+    fetch('/confirm-import', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            file_path: currentFilePath
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            let successMessage = `
+                <div class="import-summary">
+                    <h4>✅ Import Completed Successfully!</h4>
+                    <p><strong>Records Imported:</strong> ${data.imported_count}</p>
+                    <p><strong>Records Skipped:</strong> ${data.skipped_count}</p>
+                </div>
+            `;
+            
+            if (data.import_errors && data.import_errors.length > 0) {
+                successMessage += '<div class="import-errors"><h5>Some records had errors:</h5><ul>';
+                data.import_errors.slice(0, 5).forEach(error => {
+                    successMessage += `<li>${error}</li>`;
+                });
+                if (data.import_errors.length > 5) {
+                    successMessage += `<li>... and ${data.import_errors.length - 5} more errors</li>`;
+                }
+                successMessage += '</ul></div>';
+            }
+            
+            Swal.fire({
+                title: 'Import Complete!',
+                html: successMessage,
+                icon: 'success',
+                width: '600px',
+                confirmButtonColor: '#28a745',
+                confirmButtonText: 'View Alumni Records'
+            }).then(() => {
+                window.location.href = '/records';
+            });
+        } else {
+            Swal.fire({
+                title: 'Import Failed',
+                text: data.error || 'Failed to import records',
+                icon: 'error',
+                confirmButtonColor: '#dc3545'
+            });
+            
+            btn.disabled = false;
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Confirm Import
+            `;
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Network error during import. Please try again.',
+            icon: 'error',
+            confirmButtonColor: '#dc3545'
+        });
+        
+        btn.disabled = false;
+        btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Confirm Import
+        `;
+    });
+}
+
+// Cancel import
+document.getElementById('cancelImportBtn').addEventListener('click', function() {
+    Swal.fire({
+        title: 'Cancel Import?',
+        text: 'Are you sure you want to cancel this import?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Cancel',
+        cancelButtonText: 'Continue Import'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/records';
+        }
+    });
+});
+
+// Logout button event listener
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            confirmLogout();
+        });
+    }
+});
+</script>
+
+<style>
+.import-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.import-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e8edf3;
+}
+
+.import-header h3 {
+    color: #1a2e4a;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.import-description {
+    color: #6b7a99;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.template-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid #e8edf3;
+}
+
+.template-info h4 {
+    color: #1a2e4a;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.template-info p {
+    color: #6b7a99;
+    font-size: 13px;
+    margin: 0;
+}
+
+.upload-section {
+    margin-bottom: 25px;
+}
+
+.upload-header h4 {
+    color: #1a2e4a;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.upload-header p {
+    color: #6b7a99;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.upload-area {
+    border: 2px dashed #d8e3ef;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    background: #fafbfc;
+    transition: all 0.3s ease;
+}
+
+.upload-area.drag-over {
+    border-color: #1a73e8;
+    background: #f0f7ff;
+}
+
+.file-input-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.file-input-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-input-label:hover {
+    color: #1a73e8;
+}
+
+.file-input-label.file-selected {
+    color: #28a745;
+}
+
+.file-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a2e4a;
+}
+
+.file-hint {
+    font-size: 13px;
+    color: #6b7a99;
+}
+
+.upload-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.progress-container {
+    background: white;
+    border: 1px solid #e8edf3;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+}
+
+.progress-header h4 {
+    color: #1a2e4a;
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e8edf3;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1a73e8, #34a853);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: #6b7a99;
+    font-size: 14px;
+}
+
+.preview-section {
+    background: white;
+    border: 1px solid #e8edf3;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e8edf3;
+}
+
+.preview-header h4 {
+    color: #1a2e4a;
+    margin: 0;
+}
+
+.preview-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-item {
+    color: #6b7a99;
+    font-size: 13px;
+}
+
+.stat-item strong {
+    color: #1a2e4a;
+}
+
+.preview-warnings {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.preview-warnings h5 {
+    color: #856404;
+    margin: 0 0 10px 0;
+}
+
+.preview-warnings ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #856404;
+}
+
+.preview-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 1px solid #e8edf3;
+    border-radius: 6px;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.preview-table th {
+    background: #f8fafc;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #1a2e4a;
+    border-bottom: 2px solid #e8edf3;
+    position: sticky;
+    top: 0;
+}
+
+.preview-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e8edf3;
+    color: #4a5e73;
+}
+
+.preview-table tr:hover {
+    background: #f8fafc;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.validation-errors h4 {
+    color: #dc3545;
+    margin-bottom: 10px;
+}
+
+.validation-errors ul {
+    color: #dc3545;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.validation-warnings h4 {
+    color: #ffc107;
+    margin-bottom: 10px;
+}
+
+.validation-warnings ul {
+    color: #856404;
+    text-align: left;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.import-summary h4 {
+    color: #28a745;
+    margin-bottom: 15px;
+}
+
+.import-summary p {
+    margin: 5px 0;
+    color: #4a5e73;
+}
+
+.import-errors h5 {
+    color: #dc3545;
+    margin-bottom: 10px;
+}
+
+.import-errors ul {
+    color: #dc3545;
+    text-align: left;
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 12px;
+}
+
+@media (max-width: 768px) {
+    .import-container {
+        padding: 20px;
+    }
+    
+    .template-section {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .upload-actions {
+        flex-direction: column;
+    }
+    
+    .preview-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .preview-stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .preview-actions {
+        flex-direction: column;
+    }
+    
+    .preview-table-wrapper {
+        font-size: 12px;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 8px;
+    }
+}
+</style>
+
+</body>
+</html>
