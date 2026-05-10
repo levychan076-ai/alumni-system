@@ -35,20 +35,46 @@ app = Flask(__name__)
 app.secret_key = "secret123"
 
 
+import os
+import pymysql
+
+import os
+import pymysql
+
 def get_db():
+
+    railway_host = os.getenv("MYSQLHOST")
+    railway_port = os.getenv("MYSQLPORT")
+
+    # Railway Production
+    if railway_host and railway_port:
+
+        return pymysql.connect(
+            host=railway_host,
+            user=os.getenv("MYSQLUSER"),
+            password=os.getenv("MYSQLPASSWORD"),
+            database=os.getenv("MYSQLDATABASE") or os.getenv("MYSQL_DATABASE"),
+            port=int(railway_port),
+            cursorclass=pymysql.cursors.DictCursor,
+            autocommit=False
+        )
+
+    # Local XAMPP
     return pymysql.connect(
-        host=os.getenv("MYSQLHOST"),
-        user=os.getenv("MYSQLUSER"),
-        password=os.getenv("MYSQLPASSWORD"),
-        database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT"))
+        host="localhost",
+        user="root",
+        password="",
+        database="alumni_system",
+        port=3306,
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False
     )
 
 def test_database():
     """Test database connection and user_login table"""
     try:
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Test connection
         cursor.execute("SELECT 1 as test")
@@ -336,7 +362,7 @@ def test_login():
     
     # Test specific login query
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Test with sample credentials
@@ -382,7 +408,7 @@ def login_admin():
             return render_template("login_admin.html", error="Username and password are required.")
 
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
 
         try:
             # Query user with exact username and password match
@@ -445,7 +471,7 @@ def login_alumni():
         print(f"  Password: '{alumni_password}'")
 
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
 
         try:
             cursor.execute("""
@@ -505,7 +531,7 @@ def login():
             return render_template("login.html", error="Username and password are required.")
 
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
 
         try:
             # Query user with exact username and password match
@@ -568,13 +594,14 @@ def dashboard():
 
     # Get dashboard data based on user role
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Get comprehensive statistics for dashboard
         # Total alumni count
         cursor.execute("SELECT COUNT(*) as total FROM alumni_table")
-        total_alumni = cursor.fetchone()['total']
+        result = cursor.fetchone()
+        total_alumni = result['total'] if result else 0
         
         # Program-specific counts
         cursor.execute("""
@@ -668,7 +695,8 @@ def dashboard():
         
         # Get pending requests (for admin)
         cursor.execute("SELECT COUNT(*) as pending FROM alumni_notifications WHERE status = 'pending'")
-        pending_requests = cursor.fetchone()['pending']
+        result = cursor.fetchone()
+        pending_requests = result['pending'] if result else 0
         
     except Exception as e:
         print("Dashboard error:", e)
@@ -727,7 +755,7 @@ def records():
     user_type = session.get("user_type")
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     records_query, count_query, paginated_params, count_params = build_search_query(
         search, per_page=per_page, offset=offset
@@ -737,7 +765,8 @@ def records():
     raw_records = cursor.fetchall()
 
     cursor.execute(count_query, tuple(count_params))
-    total_records = cursor.fetchone()['COUNT(DISTINCT a.alumni_id)']
+    result = cursor.fetchone()
+    total_records = result['COUNT(DISTINCT a.alumni_id)'] if result else 0
 
     cursor.close()
     db.close()
@@ -802,7 +831,7 @@ def add():
     try:
         # Fetch programs for dropdown
         cursor.execute("SELECT program_name FROM programs ORDER BY program_name")
-        programs = [row[0] for row in cursor.fetchall()]
+        programs = [row['program_name'] for row in cursor.fetchall()]
         
         if request.method == "POST":
 
@@ -950,7 +979,7 @@ def view_educ(alumni_id):
     page = request.args.get("page", 1)
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     cursor.execute("""
         SELECT program, major, graduation_date
@@ -976,7 +1005,7 @@ def view_employ(alumni_id):
     page = request.args.get("page", 1)
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     cursor.execute("""
         SELECT job_title, employment_status, employment_sector, degree_relevance_to_work
@@ -1002,7 +1031,7 @@ def activity():
         return "Access Denied", 403
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     cursor.execute("""
         SELECT username, user_type, activity, date_time
@@ -1029,7 +1058,7 @@ def announcement():
         return "Access Denied", 403
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     search = request.args.get("search", "").strip()
     selected_ids = request.args.getlist("selected_alumni")
@@ -1436,7 +1465,7 @@ def update(alumni_id):
         return redirect("/")
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     try:
         # Fetch programs for dropdown
@@ -1613,10 +1642,9 @@ def update(alumni_id):
 def archive(alumni_id):
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     try:
-        db.start_transaction()
 
         cursor.execute("""
             SELECT a.alumni_id, a.stud_num, a.last_name, a.first_name, a.middle_name,
@@ -2007,7 +2035,7 @@ def confirm_import():
         
         # Import records to database
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         imported_count = 0
         skipped_count = 0
@@ -2241,7 +2269,7 @@ def combined_graduates():
 @login_required
 def program_summary():
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     cursor.execute("""
         SELECT 
@@ -2298,7 +2326,7 @@ def createuser_public():
 def create_user():
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     # GET ALL USERS
     cursor.execute("""
@@ -2505,7 +2533,7 @@ def save_user():
 def get_user(id):
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     # USER INFO
     cursor.execute("""
@@ -2752,7 +2780,6 @@ def resequence_alumni_ids():
     cursor = db.cursor()
 
     try:
-        db.start_transaction()
 
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
 
@@ -3242,7 +3269,8 @@ def export_filtered_count():
         count_params.append(f"%{contact_clean}%")
 
     cursor.execute(count_query, tuple(count_params))
-    count = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    count = result[0] if result else 0
 
     cursor.close()
     db.close()
@@ -3367,8 +3395,8 @@ def employment_summary():
     cursor.close()
     db.close()
 
-    labels = [r[0] for r in rows]
-    counts = [r[1] for r in rows]
+    labels = [r['label'] for r in rows]
+    counts = [r['count'] for r in rows]
 
     return jsonify({"labels": labels, "counts": counts})
 
@@ -3397,8 +3425,8 @@ def relevance_summary():
     cursor.close()
     db.close()
 
-    labels = [r[0] for r in rows]
-    counts = [r[1] for r in rows]
+    labels = [r['label'] for r in rows]
+    counts = [r['count'] for r in rows]
 
     return jsonify({"labels": labels, "counts": counts})
 
@@ -3475,7 +3503,7 @@ def my_profile():
         return redirect("/dashboard")
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     try:
         # Fetch programs for dropdown
         cursor.execute("SELECT program_name FROM programs ORDER BY program_name")
@@ -4092,7 +4120,7 @@ def alumni_notif():
     filter_status = request.args.get("status", "pending")
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     if filter_status == "all":
         where = ""
@@ -4154,8 +4182,9 @@ def pending_notif_count():
 
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM alumni_update_requests WHERE status = 'pending'")
-    count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) as count FROM alumni_update_requests WHERE status = 'pending'")
+    result = cursor.fetchone()
+    count = result['count'] if result else 0
     cursor.close()
     db.close()
 
@@ -4173,7 +4202,7 @@ def request_update():
     reason = (data.get("reason") or "").strip() or "No reason provided."
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     try:
         # Get alumni info from alumni_table
@@ -4228,7 +4257,7 @@ def resolve_update_request():
         return jsonify({"success": False, "error": "Invalid action."})
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     try:
         # Get the request details including update_data
@@ -4356,7 +4385,7 @@ def my_update_status():
         return jsonify({"error": "Unauthorized"}), 403
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     # Get alumni info from alumni_table
     cursor.execute("SELECT alumni_id, email FROM alumni_table WHERE email = %s LIMIT 1", (session.get("username"),))
@@ -4400,7 +4429,7 @@ def my_announcement_status():
         return jsonify({"error": "Unauthorized"}), 403
 
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     cursor.execute("""
         SELECT id, subject, message, recipient_emails, status, created_at, approved_at, approved_by, admin_note
@@ -4429,7 +4458,7 @@ def my_announcement_status():
 @login_required
 def report_statistics():
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Get basic statistics with proper joins
@@ -4485,7 +4514,7 @@ def report_statistics():
 @login_required
 def generate_report(report_type):
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         if report_type == "summary":
@@ -4682,7 +4711,7 @@ def export_excel(report_type):
 def generate_pdf_report(report_type):
     # Get report data
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Fetch data based on report type
@@ -4826,7 +4855,7 @@ def generate_pdf_report(report_type):
 def generate_excel_report(report_type):
     # Get report data
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Fetch data based on report type
@@ -5145,7 +5174,7 @@ def add_program_major():
 def get_programs():
     try:
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         cursor.execute("""
             SELECT program_name as name, program_description as description
@@ -5168,7 +5197,7 @@ def get_programs():
 def get_majors(program_name):
     try:
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         cursor.execute("""
             SELECT m.major_name as name, m.major_description as description
