@@ -2053,7 +2053,7 @@ def confirm_import():
                     continue
                 
                 # Start transaction for this record
-                db.start_transaction()
+                # PyMySQL uses autocommit=False, no explicit start_transaction needed
                 
                 # Insert into alumni_table
                 cursor.execute("""
@@ -2232,8 +2232,8 @@ def combined_graduates():
         datasets = []
         
         # Get unique years and programs
-        all_years = sorted(set(row[0] for row in rows if row[0] is not None))
-        all_programs = sorted(set(row[1] for row in rows if row[1] is not None))
+        all_years = sorted(set(row['year'] for row in rows if row['year'] is not None))
+        all_programs = sorted(set(row['program'] for row in rows if row['program'] is not None))
         
         # Create datasets for each program
         for program in all_programs:
@@ -2242,8 +2242,8 @@ def combined_graduates():
                 # Find the total for this program and year
                 total = 0
                 for row in rows:
-                    if row[0] == year and row[1] == program:
-                        total = row[3]
+                    if row['year'] == year and row['program'] == program:
+                        total = row['total']
                         break
                 program_data.append(total)
             
@@ -2339,7 +2339,7 @@ def create_user():
     selected_user = None
 
     if users:
-        first_id = users[0]["id"]
+        first_id = users[0]['id'] if users else None
 
         # USER INFO
         cursor.execute("""
@@ -3270,7 +3270,7 @@ def export_filtered_count():
 
     cursor.execute(count_query, tuple(count_params))
     result = cursor.fetchone()
-    count = result[0] if result else 0
+    count = result['COUNT(*)'] if result else 0
 
     cursor.close()
     db.close()
@@ -4151,13 +4151,16 @@ def alumni_notif():
     notifications = cursor.fetchall()
 
     cursor.execute("SELECT COUNT(*) as c FROM alumni_update_requests WHERE status = 'pending'")
-    pending_count = cursor.fetchone()["c"]
+    result = cursor.fetchone()
+    pending_count = result['c'] if result else 0
 
     cursor.execute("SELECT COUNT(*) as c FROM alumni_update_requests WHERE status = 'approved'")
-    approved_count = cursor.fetchone()["c"]
+    result = cursor.fetchone()
+    approved_count = result['c'] if result else 0
 
     cursor.execute("SELECT COUNT(*) as c FROM alumni_update_requests WHERE status = 'rejected'")
-    rejected_count = cursor.fetchone()["c"]
+    result = cursor.fetchone()
+    rejected_count = result['c'] if result else 0
 
     cursor.close()
     db.close()
