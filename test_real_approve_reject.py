@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 import json
 from datetime import datetime
 
@@ -15,7 +15,7 @@ def test_real_approve_reject():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # 1. Check existing update requests
         print("\n1. Checking existing update requests...")

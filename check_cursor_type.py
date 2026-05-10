@@ -1,10 +1,10 @@
-import mysql.connector
+import pymysql
 
 def check_cursor_and_results():
     """Check actual cursor type and database result structure"""
     
     try:
-        db = mysql.connector.connect(
+        db = pymysql.connect(
             host="localhost",
             user="root",
             password="",
@@ -13,7 +13,7 @@ def check_cursor_and_results():
         
         print("=== CHECKING CURSOR TYPES ===")
         
-        # Test 1: Regular cursor (no dictionary=True)
+        # Test 1: Regular cursor (no )
         cursor1 = db.cursor()
         cursor1.execute("SELECT alumni_id, stud_num, photo FROM alumni_table LIMIT 1")
         result1 = cursor1.fetchone()
@@ -29,7 +29,7 @@ def check_cursor_and_results():
         cursor1.close()
         
         # Test 2: Dictionary cursor
-        cursor2 = db.cursor(dictionary=True)
+        cursor2 = db.cursor()
         cursor2.execute("SELECT alumni_id, stud_num, photo FROM alumni_table LIMIT 1")
         result2 = cursor2.fetchone()
         print(f"\nDictionary cursor result type: {type(result2)}")
@@ -47,7 +47,7 @@ def check_cursor_and_results():
         print("\n=== CHECKING APP.PY CURSOR USAGE ===")
         
         # Check records route cursor
-        cursor3 = db.cursor(dictionary=True)  # This is what app.py uses
+        cursor3 = db.cursor()  # This is what app.py uses
         cursor3.execute("""
             SELECT
                 a.alumni_id, a.stud_num, a.photo, a.last_name, a.first_name, a.middle_name,

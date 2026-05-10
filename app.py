@@ -3460,7 +3460,7 @@ def register():
                 try:
                     # Check email uniqueness in alumni_table
                     cursor.execute(
-                        "SELECT alumni_id FROM `alumni_table` WHERE email=%s",
+                        "SELECT alumni_id FROM alumni_table WHERE email=%s",
                         (email,)
                     )
                     if cursor.fetchone():
@@ -3470,7 +3470,7 @@ def register():
                         stud_num = f"TAL-{datetime.now().year}-{str(int(time.time()) % 100000).zfill(5)}"
                         
                         cursor.execute("""
-                            INSERT INTO `alumni_table`
+                            INSERT INTO alumni_table
                             (stud_num, last_name, first_name, middle_name, email, alumni_password, added_by, date_added)
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                         """, (stud_num, lname, fname, mname, email, password, 'alumni_self_service', date.today()))
@@ -4180,7 +4180,7 @@ def alumni_notif():
 @app.route("/api/pending-notif-count")
 @login_required
 def pending_notif_count():
-    if session.get("user_type") != "ADMIN":
+    if session.get("user_type") != "Admin":
         return jsonify({"count": 0})
 
     db = get_db()

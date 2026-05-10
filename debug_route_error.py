@@ -35,7 +35,7 @@ def debug_route_error():
         from datetime import datetime
         
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         try:
             # Step 1: Check request data

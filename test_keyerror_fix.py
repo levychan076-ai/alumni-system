@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 import urllib.request
 import urllib.error
 
@@ -9,13 +9,13 @@ def test_keyerror_fix():
     
     try:
         # Test 1: Database query with dictionary cursor
-        db = mysql.connector.connect(
+        db = pymysql.connect(
             host="localhost",
             user="root",
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Test the exact query used by Records route
         cursor.execute("""

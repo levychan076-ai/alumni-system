@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def check_alumni_degree_schema():
     try:
@@ -8,7 +8,7 @@ def check_alumni_degree_schema():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Check alumni_degree table structure
         cursor.execute("DESCRIBE alumni_degree")

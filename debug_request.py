@@ -15,7 +15,7 @@ def debug_request_update():
     # Test database connection
     try:
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         print("✅ Database connection successful")
     except Exception as e:
         print(f"❌ Database connection failed: {e}")

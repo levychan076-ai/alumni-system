@@ -1,9 +1,9 @@
-import mysql.connector
+import pymysql
 from flask import Flask
 import json
 
 def get_db():
-    return mysql.connector.connect(
+    return pymysql.connect(
         host="localhost",
         user="root",
         password="",
@@ -13,7 +13,7 @@ def get_db():
 def test_exact_majors():
     """Test that only exact required majors are in database"""
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     print("=== TESTING EXACT MAJORS IN DATABASE ===")
     

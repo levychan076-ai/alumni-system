@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def get_db():
     return mysql.connector.connect(
@@ -11,7 +11,7 @@ def get_db():
 def check_duplicate_majors():
     """Check for duplicate majors in database"""
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     print("=== CHECKING FOR DUPLICATE MAJORS ===")
     

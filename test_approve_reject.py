@@ -13,7 +13,7 @@ def test_approve_reject():
     print("=== TESTING APPROVE/REJECT FUNCTIONALITY ===")
     
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Get the first pending request

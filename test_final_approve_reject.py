@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 import json
 from datetime import datetime
 
@@ -14,7 +14,7 @@ def test_final_approve_reject():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Test 1: Verify the main fix - dictionary access
         print("\n1. TESTING MAIN FIX - DICTIONARY ACCESS")

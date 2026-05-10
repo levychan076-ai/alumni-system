@@ -12,7 +12,7 @@ def debug_reason_saving():
     print("=== DEBUGGING REASON SAVING ===")
     
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Check current update requests

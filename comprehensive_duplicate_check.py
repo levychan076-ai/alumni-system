@@ -1,7 +1,7 @@
-import mysql.connector
+import pymysql
 
 def get_db():
-    return mysql.connector.connect(
+    return pymysql.connect(
         host="localhost",
         user="root",
         password="",
@@ -11,7 +11,7 @@ def get_db():
 def comprehensive_duplicate_check():
     """Comprehensive check for all sources of duplicates"""
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     print("=== COMPREHENSIVE DUPLICATE CHECK ===")
     

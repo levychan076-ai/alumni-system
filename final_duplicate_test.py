@@ -1,9 +1,9 @@
-import mysql.connector
+import pymysql
 from flask import Flask
 import json
 
 def get_db():
-    return mysql.connector.connect(
+    return pymysql.connect(
         host="localhost",
         user="root",
         password="",
@@ -13,7 +13,7 @@ def get_db():
 def final_duplicate_test():
     """Final test to ensure no duplicates"""
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     print("=== FINAL DUPLICATE ELIMINATION TEST ===")
     

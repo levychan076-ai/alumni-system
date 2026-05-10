@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 import urllib.request
 import urllib.error
 

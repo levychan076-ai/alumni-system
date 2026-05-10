@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def check_actual_database_structure():
     """Check actual alumni_table structure and data"""
@@ -10,7 +10,7 @@ def check_actual_database_structure():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         print("=== ACTUAL alumni_table STRUCTURE ===")
         cursor.execute("DESCRIBE alumni_table")

@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def test_date_of_admission_fix():
     try:
@@ -8,7 +8,7 @@ def test_date_of_admission_fix():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         print("=== Testing date_of_admission fix ===")
         

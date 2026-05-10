@@ -12,7 +12,7 @@ def debug_real_alumni_data():
     print("=== CHECKING REAL ALUMNI DATA ===")
     
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     # Check alumni_account table
     cursor.execute("SELECT Al_Account_id, alumni_email, alumni_Lname, alumni_Fname FROM alumni_account LIMIT 5")

@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def create_missing_tables():
     try:

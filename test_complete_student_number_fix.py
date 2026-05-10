@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 import re
 
 def test_complete_student_number_fix():
@@ -13,7 +13,7 @@ def test_complete_student_number_fix():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Test 1: Check if we can find existing alumni records
         cursor.execute("SELECT alumni_id, stud_num FROM alumni_table LIMIT 3")

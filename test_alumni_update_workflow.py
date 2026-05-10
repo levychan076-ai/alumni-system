@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def test_alumni_update_workflow():
     """Test the complete alumni update workflow"""
@@ -12,7 +12,7 @@ def test_alumni_update_workflow():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Test 1: Check update request status handling
         print("✓ Testing update request status handling:")

@@ -12,7 +12,7 @@ def debug_admin_notifications_data():
     print("=== DEBUGGING ADMIN NOTIFICATIONS DATA ===")
     
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         filter_status = "pending"

@@ -13,7 +13,7 @@ def test_fixed_request():
     print("=== TESTING FIXED REQUEST LOGIC ===")
     
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     # Use the real alumni account email
     session_username = "levychan076@gmail.com"

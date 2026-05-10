@@ -13,7 +13,7 @@ def create_test_request():
     print("=== CREATING TEST REQUEST ===")
     
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Reset the existing request to pending

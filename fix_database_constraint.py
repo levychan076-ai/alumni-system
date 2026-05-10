@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def fix_date_of_admission_constraint():
     try:

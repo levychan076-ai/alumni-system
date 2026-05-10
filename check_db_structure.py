@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def get_db():
     return mysql.connector.connect(
@@ -10,7 +10,7 @@ def get_db():
 
 def check_table_structure():
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Check alumni_table structure

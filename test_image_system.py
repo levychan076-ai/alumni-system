@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 import os
 
 def test_image_system():
@@ -9,7 +9,7 @@ def test_image_system():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Check existing photo data
         cursor.execute("SELECT alumni_id, photo FROM alumni_table WHERE photo IS NOT NULL AND photo != '' LIMIT 5")

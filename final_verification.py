@@ -75,7 +75,7 @@ def final_verification():
     
     print("\n=== VERIFICATION SUMMARY ===")
     print("✅ Database query: FIXED (includes photo column)")
-    print("✅ Cursor type: CORRECT (dictionary=True)")
+    print("✅ Cursor type: CORRECT ()")
     print("✅ Row access: FIXED (dictionary.get() method)")
     print("✅ Image URL generation: WORKING (url_for)")
     print("✅ Default image: IMPLEMENTED")

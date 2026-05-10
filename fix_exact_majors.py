@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def get_db():
     return mysql.connector.connect(

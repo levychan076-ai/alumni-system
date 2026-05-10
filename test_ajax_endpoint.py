@@ -23,7 +23,7 @@ def test_ajax_endpoint():
         # Get a pending request ID
         from app import get_db
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         cursor.execute("SELECT id FROM alumni_update_requests WHERE status = 'pending' LIMIT 1")
         request = cursor.fetchone()
         cursor.close()

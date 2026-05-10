@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def check_update_requests_schema():
     try:
@@ -8,7 +8,7 @@ def check_update_requests_schema():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         # Check alumni_update_requests table structure
         cursor.execute("DESCRIBE alumni_update_requests")

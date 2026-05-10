@@ -12,7 +12,7 @@ def test_admin_notifications():
     print("=== TESTING ADMIN NOTIFICATIONS FLOW ===")
     
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     
     try:
         # Test the exact query used in alumni_notif route

@@ -1,4 +1,4 @@
-import mysql.connector
+import pymysql
 
 def test_with_real_alumni():
     try:
@@ -8,7 +8,7 @@ def test_with_real_alumni():
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         print("=== Testing with existing alumni ===")
         

@@ -43,14 +43,14 @@ def test_image_system_final():
     
     # Test 4: Check existing image in database
     try:
-        import mysql.connector
-        db = mysql.connector.connect(
+        import pymysql
+        db = pymysql.connect(
             host="localhost",
             user="root",
             password="",
             database="alumni_system"
         )
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         
         cursor.execute("SELECT COUNT(*) as count FROM alumni_table WHERE photo IS NOT NULL AND photo != ''")
         result = cursor.fetchone()
