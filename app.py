@@ -6,6 +6,7 @@ import io
 import os
 import uuid
 import anthropic
+from werkzeug.utils import secure_filename
 from io import BytesIO
 from datetime import date, datetime
 import time
@@ -3509,12 +3510,38 @@ def register():
             password = request.form.get("password", "")
             confirm = request.form.get("confirm_password", "")
 
+            # Handle photo upload
+            photo_file = request.files.get("photo")
+            photo_filename = None
+            
+            if photo_file and photo_file.filename:
+                # Validate file type
+                allowed_extensions = {'jpg', 'jpeg', 'png'}
+                file_ext = photo_file.filename.rsplit('.', 1)[1].lower() if '.' in photo_file.filename else ''
+                
+                if file_ext not in allowed_extensions:
+                    error = "Invalid file type. Please upload JPG or PNG image."
+                elif photo_file.content_length > 5 * 1024 * 1024:  # 5MB limit
+                    error = "File too large. Please upload an image smaller than 5MB."
+                else:
+                    # Generate unique filename
+                    filename = secure_filename(photo_file.filename)
+                    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                    photo_path = os.path.join('static', 'uploads', 'profile_photos', unique_filename)
+                    
+                    # Save file
+                    os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+                    photo_file.save(photo_path)
+                    photo_filename = f"uploads/profile_photos/{unique_filename}"
+
             if not email:
                 error = "Email is required."
             elif not password or len(password) < 6:
                 error = "Password must be at least 6 characters."
             elif password != confirm:
                 error = "Passwords do not match."
+            elif not photo_filename:
+                error = "Profile photo is required."
             else:
                 db = get_db()
                 cursor = db.cursor()
@@ -3532,13 +3559,16 @@ def register():
                         
                         cursor.execute("""
                             INSERT INTO alumni_table
-                            (stud_num, last_name, first_name, middle_name, email, alumni_password, added_by, date_added)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                        """, (stud_num, lname, fname, mname, email, password, 'alumni_self_service', date.today()))
+                            (stud_num, last_name, first_name, middle_name, email, alumni_password, photo, added_by, date_added)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (stud_num, lname, fname, mname, email, password, photo_filename, 'alumni_self_service', date.today()))
                         
                         db.commit()
                         success = "Account created successfully! You can now log in as Alumni."
                 except Exception as e:
+                    import traceback
+                    print("ERROR - Registration failed:", str(e))
+                    traceback.print_exc()
                     db.rollback()
                     error = str(e)
                 finally:

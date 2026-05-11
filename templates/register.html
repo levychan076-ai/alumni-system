@@ -256,6 +256,58 @@
             margin-top: 4px;
         }
 
+        .field-help {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Photo Upload Styles */
+        .file-upload-wrapper {
+            position: relative;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            background: var(--cream);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--gold);
+            background: #fff;
+        }
+
+        .file-upload-label svg {
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .file-preview {
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .file-preview img {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         /* PASSWORD */
         .pw-wrap {
             position: relative;
@@ -471,7 +523,7 @@
             {% endif %}
 
             <!-- STEP 1: Create Account -->
-            <form method="POST" action="/register" id="createForm">
+            <form method="POST" action="/register" id="createForm" enctype="multipart/form-data">
                 <input type="hidden" name="step" value="create">
                 <input type="hidden" name="alumni_id" value="">
 
@@ -490,6 +542,25 @@
                 <div class="field-group">
                     <label class="field-label">Middle Name</label>
                     <input type="text" name="middle_name" class="field-input" placeholder="Middle Name (optional)">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Profile Photo <span class="req">*</span></label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" name="photo" id="photoInput" class="file-input" accept="image/jpeg,image/jpg,image/png" required>
+                        <label for="photoInput" class="file-upload-label">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21,15 16,10 5,15"/>
+                            </svg>
+                            <span id="photoFileName">Choose 2x2 Photo (JPG, PNG)</span>
+                        </label>
+                        <div class="file-preview" id="photoPreview" style="display: none;">
+                            <img id="photoPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 120px; border-radius: 8px;">
+                        </div>
+                    </div>
+                    <small class="field-help">Required: 2x2 photo in JPG or PNG format</small>
                 </div>
 
                 <div class="section-label">Account Information</div>
@@ -604,6 +675,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     {% endif %}
+});
+
+// Photo preview functionality
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('photoPreview');
+    const previewImg = document.getElementById('photoPreviewImg');
+    const fileName = document.getElementById('photoFileName');
+    
+    if (file) {
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File',
+                text: 'Please upload a JPG or PNG image file.',
+                confirmButtonColor: '#0d2137'
+            });
+            return;
+        }
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: 'Please upload an image smaller than 5MB.',
+                confirmButtonColor: '#0d2137'
+            });
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+            fileName.textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+        previewImg.src = '';
+        fileName.textContent = 'Choose 2x2 Photo (JPG, PNG)';
+    }
 });
 
 // Enhanced form validation with real-time email checking
