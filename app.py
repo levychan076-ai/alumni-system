@@ -641,7 +641,7 @@ def dashboard():
             FROM alumni_table a
             LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
             WHERE e.employment_status IS NOT NULL
-            GROUP BY e.employment_status
+            GROUP BY COALESCE(e.employment_status, 'Unknown')
         """)
         employment_stats = cursor.fetchall()
         
@@ -1113,11 +1113,18 @@ def announcement():
     if user_type not in ["Admin", "Alumni Coordinator"]:
         return "Access Denied", 403
 
-    db = get_db()
-    cursor = db.cursor()
+    try:
+        db = get_db()
+        cursor = db.cursor()
 
-    search = request.args.get("search", "").strip()
-    selected_ids = request.args.getlist("selected_alumni")
+        search = request.args.get("search", "").strip()
+        selected_ids = request.args.getlist("selected_alumni")
+
+    except Exception as e:
+        app.logger.error(f"Database connection error in /announcement route: {str(e)}")
+        return render_template("error.html", 
+                           error="Database connection error. Please try again.",
+                           user_type=user_type), 500
 
     # ================= HANDLE POST (SEND EMAIL) =================
     success = None
@@ -1385,22 +1392,45 @@ def announcement():
         query += " AND LOWER(COALESCE(e.job_title, '')) LIKE %s"
         params.append(f"%{filter_job_title.lower()}%")
 
-    query += " GROUP BY a.alumni_id ORDER BY a.first_name ASC"
+    query += " ORDER BY a.first_name ASC"
 
-    cursor.execute(query, tuple(params))
-    alumni_list = cursor.fetchall()
-    # Get coordinator's own announcement requests
-    cursor.execute("""
-        SELECT id, subject, message, recipient_emails, status, created_at, approved_at, approved_by, admin_note
-        FROM announcement_requests
-        WHERE coordinator_id = %s
-        ORDER BY created_at DESC
-        LIMIT 10
-    """, (session.get("username"),))
-    my_requests = cursor.fetchall()
-
-    cursor.close()
-    db.close()
+    try:
+        # Debug logging for Railway
+        app.logger.info(f"Announcement alumni query executed - Search: '{search}', User: {user_type}")
+        app.logger.debug(f"Query placeholders: {query.count('%s')}, Params: {len(params)}")
+        
+        cursor.execute(query, tuple(params))
+        alumni_list = cursor.fetchall()
+        
+        # Get coordinator's own announcement requests
+        cursor.execute("""
+            SELECT id, subject, message, recipient_emails, status, created_at, approved_at, approved_by, admin_note
+            FROM announcement_requests
+            WHERE coordinator_id = %s
+            ORDER BY created_at DESC
+            LIMIT 10
+        """, (session.get("username"),))
+        my_requests = cursor.fetchall()
+        
+    except Exception as e:
+        app.logger.error(f"Error executing alumni query in /announcement route: {str(e)}")
+        app.logger.error(f"Query: {query}")
+        app.logger.error(f"Params: {params}")
+        app.logger.error(f"User type: {user_type}")
+        
+        # Ensure database connection is closed on error
+        try:
+            cursor.close()
+            db.close()
+        except:
+            pass
+        
+        return render_template("error.html", 
+                           error="An error occurred while loading alumni data. Please try again.",
+                           user_type=user_type), 500
+    finally:
+        cursor.close()
+        db.close()
 
     return render_template(
         "announcement.html",
@@ -3540,7 +3570,7 @@ def employment_summary():
             COUNT(DISTINCT a.alumni_id) AS total
         FROM alumni_table a
         LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
-        GROUP BY status
+        GROUP BY COALESCE(NULLIF(TRIM(e.employment_status), ''), 'Unknown')
         ORDER BY total DESC
     """)
 
@@ -4768,7 +4798,7 @@ def generate_report(report_type):
                 FROM alumni_table a
                 LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
                 WHERE a.email IS NOT NULL AND TRIM(a.email) != ''
-                GROUP BY e.employment_status
+                GROUP BY COALESCE(e.employment_status, 'Unknown')
                 ORDER BY count DESC
             """)
             data = {"employment_status": cursor.fetchall()}
@@ -4945,7 +4975,7 @@ def generate_pdf_report(report_type):
                 FROM alumni_table a
                 LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
                 WHERE a.email IS NOT NULL AND TRIM(a.email) != ''
-                GROUP BY e.employment_status
+                GROUP BY COALESCE(e.employment_status, 'Unknown')
                 ORDER BY count DESC
             """)
             data = {"employment_status": cursor.fetchall()}
@@ -5089,7 +5119,7 @@ def generate_excel_report(report_type):
                 FROM alumni_table a
                 LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
                 WHERE a.email IS NOT NULL AND TRIM(a.email) != ''
-                GROUP BY e.employment_status
+                GROUP BY COALESCE(e.employment_status, 'Unknown')
                 ORDER BY count DESC
             """)
             data = {"employment_status": cursor.fetchall()}
@@ -5210,7 +5240,7 @@ def fetch_report_data(cursor, report_type):
             FROM alumni_table a
             LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
             WHERE a.email IS NOT NULL AND TRIM(a.email) != ''
-            GROUP BY e.employment_status
+            GROUP BY COALESCE(e.employment_status, 'Unknown')
             ORDER BY count DESC
         """)
         return {"employment_status": cursor.fetchall()}
