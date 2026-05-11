@@ -3508,6 +3508,7 @@ def register():
             mname = request.form.get("middle_name", "").strip()
             email = request.form.get("email", "").strip()
             address = request.form.get("address", "").strip()
+            contact_num = request.form.get("contact_num", "").strip()
             password = request.form.get("password", "")
             confirm = request.form.get("confirm_password", "")
 
@@ -3543,6 +3544,8 @@ def register():
                 error = "Passwords do not match."
             elif not address or len(address.strip()) == 0:
                 error = "Address is required."
+            elif not contact_num or len(contact_num.strip()) == 0:
+                error = "Contact number is required."
             elif not photo_filename:
                 error = "Profile photo is required."
             else:
@@ -3562,9 +3565,9 @@ def register():
                         
                         cursor.execute("""
                             INSERT INTO alumni_table
-                            (stud_num, last_name, first_name, middle_name, email, alumni_password, address, photo, added_by, date_added)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """, (stud_num, lname, fname, mname, email, password, address, photo_filename, 'alumni_self_service', date.today()))
+                            (stud_num, last_name, first_name, middle_name, email, alumni_password, address, contact_num, photo, added_by, date_added)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (stud_num, lname, fname, mname, email, password, address, contact_num, photo_filename, 'alumni_self_service', date.today()))
                         
                         db.commit()
                         success = "Account created successfully! You can now log in as Alumni."
