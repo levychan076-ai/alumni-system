@@ -908,6 +908,9 @@ def add():
             photo_filename = save_photo(photo_file)
 
             # ---------- INSERT ALUMNI ----------
+            # Add debug logging before INSERT
+            app.logger.info(f"DEBUG: Inserting alumni record for {request.form.get('email')} into alumni_table")
+            
             cursor.execute("""
                 INSERT INTO alumni_table
                 (stud_num, last_name, middle_name, first_name, address, email, contact_num, photo, added_by, date_added)
@@ -937,6 +940,9 @@ def add():
                 except ValueError:
                     return render_template("add.html", programs=programs, error="Invalid Graduation Date format.", user_type=session.get("user_type"), now=datetime.now())
             
+            # Add debug logging before INSERT
+            app.logger.info(f"DEBUG: Inserting degree record for alumni_id {alumni_id} into alumni_degree")
+            
             cursor.execute("""
                 INSERT INTO alumni_degree
                 (alumni_id, program, major, graduation_date, added_by, date_added)
@@ -955,6 +961,9 @@ def add():
 
             if employment_status == "Unemployed":
                 # Single unemployed row, no jobs
+                # Add debug logging before INSERT
+                app.logger.info(f"DEBUG: Inserting employment record for alumni_id {alumni_id} into alumni_employment")
+                
                 cursor.execute("""
                     INSERT INTO alumni_employment
                     (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, added_by, date_added)
@@ -2503,14 +2512,16 @@ def save_user_public():
         email = request.form.get("email", "").strip()
         contact = request.form.get("contact", "").strip()
         username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
+        # Password fields removed - no longer required for user registration
+        # password = request.form.get("password", "")
         user_type = request.form.get("user_type", "")
         
         # Validation
-        if not lname or not fname or not username or not password or not user_type:
+        if not lname or not fname or not username or not user_type:
             error = "Required fields marked with * are mandatory."
-        elif len(password) < 6:
-            error = "Password must be at least 6 characters."
+        # Password validation removed
+        # elif len(password) < 6:
+        #     error = "Password must be at least 6 characters."
         elif user_type not in ["ADMIN", "ALUMNI COORDINATOR"]:
             error = "Invalid user type selected."
         else:
@@ -2605,14 +2616,16 @@ def save_user():
         user_id = cursor.lastrowid
 
         # ================= USER LOGIN =================
+        # Add debug logging before INSERT
+        app.logger.info(f"DEBUG: Inserting user login record for {request.form.get('username')} into user_login")
+        
         cursor.execute("""
             INSERT INTO user_login
-            (id, username, password, user_type)
-            VALUES (%s,%s,%s,%s)
+            (id, username, user_type)
+            VALUES (%s,%s,%s)
         """, (
             user_id,
             request.form.get("username"),
-            request.form.get("password"),
             user_type
         ))
 
@@ -3633,8 +3646,7 @@ def register():
             email = request.form.get("email", "").strip()
             address = request.form.get("address", "").strip()
             contact_num = request.form.get("contact_num", "").strip()
-            password = request.form.get("password", "")
-            confirm = request.form.get("confirm_password", "")
+            # Password fields removed - no longer required for alumni registration
 
             # Handle photo upload
             photo_file = request.files.get("photo")
@@ -3662,10 +3674,6 @@ def register():
 
             if not email:
                 error = "Email is required."
-            elif not password or len(password) < 6:
-                error = "Password must be at least 6 characters."
-            elif password != confirm:
-                error = "Passwords do not match."
             elif not address or len(address.strip()) == 0:
                 error = "Address is required."
             elif not contact_num or len(contact_num.strip()) == 0:
@@ -3889,19 +3897,15 @@ def my_profile():
                     address = request.form.get("address", "").strip()
                     contact_num = re.sub(r"\D", "", request.form.get("contact_num", ""))
                     photo_filename = new_photo
-                    password = request.form.get("password", "")
 
-                    cursor.execute("""
-                        INSERT INTO alumni_table
-                        (stud_num, last_name, first_name, middle_name, email, alumni_password, address, contact_num, photo, added_by, date_added)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (stud_num, lname, fname, mname, email, password, address, contact_num, photo_filename, 'alumni_self_service', date.today()))
+                    # Add debug logging before INSERT
+                    app.logger.info(f"DEBUG: Inserting alumni record for {email} into alumni_table")
                     
                     cursor.execute("""
-                        INSERT INTO alumni_account
-                        (stud_num, alumni_password)
-                        VALUES (%s, %s)
-                    """, (stud_num, password))
+                        INSERT INTO alumni_table
+                        (stud_num, last_name, first_name, middle_name, email, address, contact_num, photo, added_by, date_added)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (stud_num, lname, fname, mname, email, address, contact_num, photo_filename, 'alumni_self_service', date.today()))
                     
                     alumni_id = cursor.lastrowid
                     
@@ -3922,6 +3926,9 @@ def my_profile():
                             return render_template("my_profile.html", alumni=alumni, degree=educ, employment=employ, error=error, user_type="Alumni", now=datetime.now())
                     
                     if program:
+                        # Add debug logging before INSERT
+                        app.logger.info(f"DEBUG: Inserting degree record for alumni_id {alumni_id} into alumni_degree")
+                        
                         cursor.execute("""
                             INSERT INTO alumni_degree
                             (alumni_id, program, major, graduation_date, added_by, date_added)
@@ -3939,6 +3946,9 @@ def my_profile():
                     employment_status = request.form.get("employment_status", "")
                     if employment_status:
                         if employment_status == "Unemployed":
+                            # Add debug logging before INSERT
+                            app.logger.info(f"DEBUG: Inserting employment record for alumni_id {alumni_id} into alumni_employment")
+                            
                             cursor.execute("""
                                 INSERT INTO alumni_employment
                                 (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, added_by, date_added)
