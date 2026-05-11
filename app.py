@@ -1,4 +1,5 @@
 import pymysql
+import pymysql.cursors
 import re
 import csv
 import io
@@ -35,11 +36,6 @@ app = Flask(__name__)
 app.secret_key = "secret123"
 
 
-import os
-import pymysql
-
-import os
-import pymysql
 
 def get_db():
 
