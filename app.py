@@ -3836,80 +3836,78 @@ def my_profile():
                             sectors = request.form.getlist("employment_sector[]")
                             relevances = request.form.getlist("degree_relevance_to_work[]")
                             
-                            if job_titles:
-                                for i, job_title in enumerate(job_titles):
-                                    sector = sectors[i] if i < len(sectors) else ""
-                                    relevance = relevances[i] if i < len(relevances) else ""
-                                    
-                                    # Handle "Let AI Decide" option
-                                    if relevance == "Let AI Decide":
-                                        # Call AI scan relevance function
-                                        try:
-                                            program = request.form.get("program", "")
-                                            major = request.form.get("major", "")
-                                            
-                                            # Prepare AI scan request
-                                            ai_data = {
-                                                "job_title": job_title,
-                                                "program": program,
-                                                "major": major
-                                            }
-                                            
-                                            # Import the scan function logic here
-                                            prompt = (
-                                                f"A college graduate completed a {program} degree "
-                                                f"with a major in {major}. "
-                                                f"Their current job title is: '{job_title}'.\n\n"
-                                                f"Based on this, classify how relevant their degree is to their work. "
-                                                f"Reply with EXACTLY one of these four options and nothing else:\n"
-                                                f"Directly Related\n"
-                                                f"Moderately Related\n"
-                                                f"Slightly Related\n"
-                                                f"Not Related"
-                                            )
-                                            
-                                            # Use existing AI client logic
-                                            client = anthropic.Anthropic()
-                                            message = client.messages.create(
-                                                model="claude-opus-4-6",
-                                                max_tokens=20,
-                                                messages=[{"role": "user", "content": prompt}]
-                                            )
-                                            result = message.content[0].text.strip()
-                                            
-                                            # Validate AI response
-                                            valid = ["Directly Related", "Moderately Related", "Slightly Related", "Not Related"]
-                                            if result not in valid:
-                                                # Fuzzy match
-                                                result_lower = result.lower()
-                                                if "directly" in result_lower:
-                                                    relevance = "Directly Related"
-                                                elif "moderate" in result_lower:
-                                                    relevance = "Moderately Related"
-                                                elif "slightly" in result_lower:
-                                                    relevance = "Slightly Related"
-                                                else:
-                                                    relevance = "Not Related"
+
+                    if job_titles:
+                        for i, job_title in enumerate(job_titles):
+                            if job_title.strip():  # Only process non-empty job titles
+                                sector = sectors[i] if i < len(sectors) else ""
+                                relevance = relevances[i] if i < len(relevances) else ""
+
+                                # Handle "Let AI Decide" option
+                                if relevance == "Let AI decide" or relevance == "Let AI Decide":
+                                    # Call AI scan relevance function
+                                    try:
+                                        program = request.form.get("program", "")
+                                        major = request.form.get("major", "")
+
+                                                    # Prepare AI scan request
+                                        ai_data = {
+                                            "job_title": job_title.strip(),
+                                            "program": program,
+                                            "major": major
+                                        }
+
+                                        # Import the scan function logic here
+                                        prompt = (
+                                            f"A college graduate completed a {program} degree "
+                                            f"with a major in {major}. "
+                                            f"Their current job title is: '{job_title.strip()}'.\n\n"
+                                            f"Based on this, classify how relevant their degree is to their work. "
+                                            f"Reply with EXACTLY one of these four options and nothing else:\n"
+                                            f"Directly Related\n"
+                                            f"Moderately Related\n"
+                                            f"Slightly Related\n"
+                                            f"Not Related"
+                                        )
+
+                                        # Use existing AI client logic
+                                        client = anthropic.Anthropic()
+                                        message = client.messages.create(
+                                            model="claude-opus-4-6",
+                                            max_tokens=20,
+                                            messages=[{"role": "user", "content": prompt}]
+                                        )
+                                        result = message.content[0].text.strip()
+
+                                        # Validate AI response
+                                        valid = ["Directly Related", "Moderately Related", "Slightly Related", "Not Related"]
+                                        if result not in valid:
+                                            # Fuzzy match
+                                            result_lower = result.lower()
+                                            if "Directly" in result_lower:
+                                                relevance = "Directly Related"
+                                            elif "moderate" in result_lower:
+                                                relevance = "Moderately Related"
+                                            elif "slightly" in result_lower:
+                                                relevance = "Slightly Related"
                                             else:
-                                                relevance = result
-                                                
-                                        except Exception as e:
-                                            print(f"AI scan error: {e}")
-                                            relevance = "Not Related"  # Fallback
-                                    
-                                    cursor.execute("""
-                                        INSERT INTO alumni_employment
-                                        (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, added_by, date_added)
-                                        VALUES (%s,%s,%s,%s,%s,%s,%s)
-                                    """, (alumni_id, employment_status, sector or None, job_title or None, relevance or None,
-                                          "alumni_self_service", date.today()))
-                            else:
-                                # Create empty employment record
+                                                relevance = "Not Related"
+                                        else:
+                                            relevance = result
+
+                                    except Exception as e:
+                                        print(f"AI scan error: {e}")
+                                        relevance = "Not Related"  # Fallback
+
                                 cursor.execute("""
-                                    INSERT INTO alumni_employment
-                                    (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, added_by, date_added)
-                                    VALUES (%s,%s,%s,%s,%s,%s,%s)
-                                """, (alumni_id, employment_status, None, None, None, "alumni_self_service", date.today()))
+                                                INSERT INTO alumni_employment
+                                                (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, updated_by, date_updated)
+                                                VALUES (%s,%s,%s,%s,%s,%s,%s)
+                                            """, (
+                                                alumni.get('alumni_id'), employment_status, sector or None, job_title or None, relevance or None,
+                                                "alumni_self_update", date.today()
+                                            ))
+
                     
                     db.commit()
                     log_activity("Created own alumni profile")
@@ -3986,15 +3984,15 @@ def my_profile():
                         # ---------- UPDATE ALUMNI RECORD ----------
                         if not error:
                             # Get logged-in Alumni user's full name for added_by field
-                        alumni_fullname = session.get("alumni_fullname")
-                        if not alumni_fullname:
-                            # Fallback: construct from alumni record
-                            alumni_fullname = f"{alumni.get('first_name', '')} {alumni.get('last_name', '')}"
-                        
-                        # Use alumni's own name for added_by field
-                        added_by_name = alumni_fullname or f"{alumni.get('first_name', '')} {alumni.get('last_name', '')}"
-                        
-                        cursor.execute("""
+                            alumni_fullname = session.get("alumni_fullname")
+                            if not alumni_fullname:
+                                # Fallback: construct from alumni record
+                                alumni_fullname = f"{alumni.get('first_name', '')} {alumni.get('last_name', '')}"
+                            
+                            # Use alumni's own name for added_by field
+                            added_by_name = alumni_fullname or f"{alumni.get('first_name', '')} {alumni.get('last_name', '')}"
+                            
+                            cursor.execute("""
                                 UPDATE alumni_table 
                                 SET stud_num = %s, last_name = %s, middle_name = %s, first_name = %s, 
                                     address = %s, email = %s, contact_num = %s, photo = %s,
@@ -4015,131 +4013,130 @@ def my_profile():
                             ))
                             
                             # ---------- DEGREE INFORMATION ----------
-                            program = request.form.get("program", "").strip()
-                            major = request.form.get("major", "").strip()
-                            grad_date = request.form.get("graduation_date") or None
+                        program = request.form.get("program", "").strip()
+                        major = request.form.get("major", "").strip()
+                        grad_date = request.form.get("graduation_date") or None
+                        
+                        if program:
+                            # Check if degree record exists
+                            cursor.execute("SELECT alumni_id FROM alumni_degree WHERE alumni_id=%s", (alumni.get('alumni_id'),))
+                            degree_exists = cursor.fetchone()
                             
-                            if program:
-                                # Check if degree record exists
-                                cursor.execute("SELECT alumni_id FROM alumni_degree WHERE alumni_id=%s", (alumni.get('alumni_id'),))
-                                degree_exists = cursor.fetchone()
-                                
-                                if degree_exists:
-                                    # Update existing degree record
-                                    cursor.execute("""
-                                        UPDATE alumni_degree 
-                                        SET program = %s, major = %s, graduation_date = %s,
-                                            updated_by = %s, date_updated = %s
-                                        WHERE alumni_id = %s
-                                    """, (
-                                        program, major, grad_date,
-                                        "alumni_self_update", date.today(),
-                                        alumni.get('alumni_id')
-                                    ))
-                                else:
-                                    # Insert new degree record
-                                    cursor.execute("""
-                                        INSERT INTO alumni_degree
-                                        (alumni_id, program, major, graduation_date, added_by, date_added)
-                                        VALUES (%s,%s,%s,%s,%s,%s)
-                                    """, (
-                                        alumni.get('alumni_id'), program, major, grad_date,
-                                        "alumni_self_update", date.today()
-                                    ))
+                            if degree_exists:
+                                # Update existing degree record
+                                cursor.execute("""
+                                    UPDATE alumni_degree 
+                                    SET program = %s, major = %s, graduation_date = %s,
+                                        updated_by = %s, date_updated = %s
+                                    WHERE alumni_id = %s
+                                """, (
+                                    program, major, grad_date,
+                                    "alumni_self_update", date.today(),
+                                    alumni.get('alumni_id')
+                                ))
+                            else:
+                                # Insert new degree record
+                                cursor.execute("""
+                                    INSERT INTO alumni_degree
+                                    (alumni_id, program, major, graduation_date, added_by, date_added)
+                                    VALUES (%s,%s,%s,%s,%s)
+                                """, (
+                                    alumni_id, program, major, grad_date,
+                                    "alumni_self_update", date.today()
+                                ))
+                                                        # ---------- EMPLOYMENT INFORMATION ----------
+                        employment_status = request.form.get("employment_status", "").strip()
+                        if employment_status:
+                            # First delete existing employment records for this alumni
+                            cursor.execute("DELETE FROM alumni_employment WHERE alumni_id=%s", (alumni.get('alumni_id'),))
                             
-                            # ---------- EMPLOYMENT INFORMATION ----------
-                            employment_status = request.form.get("employment_status", "").strip()
-                            if employment_status:
-                                # First delete existing employment records for this alumni
-                                cursor.execute("DELETE FROM alumni_employment WHERE alumni_id=%s", (alumni.get('alumni_id'),))
-                                
-                                if employment_status == "Unemployed":
-                                    # Insert single unemployed record
-                                    cursor.execute("""
-                                        INSERT INTO alumni_employment
-                                        (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, updated_by, date_updated)
-                                        VALUES (%s,%s,%s,%s,%s,%s,%s)
-                                    """, (
-                                        alumni.get('alumni_id'), "Unemployed", None, None, None,
-                                        "alumni_self_update", date.today()
-                                    ))
-                                else:
-                                    # Handle employed/self-employed with multiple job details
-                                    job_titles = request.form.getlist("job_title[]")
-                                    sectors = request.form.getlist("employment_sector[]")
-                                    relevances = request.form.getlist("degree_relevance_to_work[]")
-                                    
-                                    if job_titles:
-                                        for i, job_title in enumerate(job_titles):
-                                            if job_title.strip():  # Only process non-empty job titles
-                                                sector = sectors[i] if i < len(sectors) else ""
-                                                relevance = relevances[i] if i < len(relevances) else ""
-                                                
-                                                # Handle "Let AI Decide" option
-                                                if relevance == "Let AI decide" or relevance == "Let AI Decide":
-                                                    # Call AI scan relevance function
-                                                    try:
-                                                        program = request.form.get("program", "")
-                                                        major = request.form.get("major", "")
-                                                        
-                                                        # Prepare AI scan request
-                                                        ai_data = {
-                                                            "job_title": job_title.strip(),
-                                                            "program": program,
-                                                            "major": major
-                                                        }
-                                                        
-                                                        # Import the scan function logic here
-                                                        prompt = (
-                                                            f"A college graduate completed a {program} degree "
-                                                            f"with a major in {major}. "
-                                                            f"Their current job title is: '{job_title.strip()}'.\n\n"
-                                                            f"Based on this, classify how relevant their degree is to their work. "
-                                                            f"Reply with EXACTLY one of these four options and nothing else:\n"
-                                                            f"Directly Related\n"
-                                                            f"Moderately Related\n"
-                                                            f"Slightly Related\n"
-                                                            f"Not Related"
-                                                        )
-                                                        
-                                                        # Use existing AI client logic
-                                                        client = anthropic.Anthropic()
-                                                        message = client.messages.create(
-                                                            model="claude-opus-4-6",
-                                                            max_tokens=20,
-                                                            messages=[{"role": "user", "content": prompt}]
-                                                        )
-                                                        result = message.content[0].text.strip()
-                                                        
-                                                        # Validate AI response
-                                                        valid = ["Directly Related", "Moderately Related", "Slightly Related", "Not Related"]
-                                                        if result not in valid:
-                                                            # Fuzzy match
-                                                            result_lower = result.lower()
-                                                            if "directly" in result_lower:
-                                                                relevance = "Directly Related"
-                                                            elif "moderate" in result_lower:
-                                                                relevance = "Moderately Related"
-                                                            elif "slightly" in result_lower:
-                                                                relevance = "Slightly Related"
-                                                            else:
-                                                                relevance = "Not Related"
+                            if employment_status == "Unemployed":
+                                # Insert single unemployed record
+                                cursor.execute("""
+                                    INSERT INTO alumni_employment
+                                    (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, updated_by, date_updated)
+                                    VALUES (%s,%s,%s,%s,%s,%s,%s)
+                                """, (
+                                    alumni.get('alumni_id'), "Unemployed", None, None, None,
+                                    "alumni_self_update", date.today()
+                                ))
+                            else:
+                                # Handle employed/self-employed with multiple job details
+                                job_titles = request.form.getlist("job_title[]")
+                                sectors = request.form.getlist("employment_sector[]")
+                                relevances = request.form.getlist("degree_relevance_to_work[]")
+
+                                if job_titles:
+                                    for i, job_title in enumerate(job_titles):
+                                        if job_title.strip():  # Only process non-empty job titles
+                                            sector = sectors[i] if i < len(sectors) else ""
+                                            relevance = relevances[i] if i < len(relevances) else ""
+
+                                            # Handle "Let AI Decide" option
+                                            if relevance == "Let AI decide" or relevance == "Let AI Decide":
+                                                # Call AI scan relevance function
+                                                try:
+                                                    program = request.form.get("program", "")
+                                                    major = request.form.get("major", "")
+
+                                                    # Prepare AI scan request
+                                                    ai_data = {
+                                                        "job_title": job_title.strip(),
+                                                        "program": program,
+                                                        "major": major
+                                                    }
+
+                                                    # Import the scan function logic here
+                                                    prompt = (
+                                                        f"A college graduate completed a {program} degree "
+                                                        f"with a major in {major}. "
+                                                        f"Their current job title is: '{job_title.strip()}'.\n\n"
+                                                        f"Based on this, classify how relevant their degree is to their work. "
+                                                        f"Reply with EXACTLY one of these four options and nothing else:\n"
+                                                        f"Directly Related\n"
+                                                        f"Moderately Related\n"
+                                                        f"Slightly Related\n"
+                                                        f"Not Related"
+                                                    )
+                                                    
+                                                    # Use existing AI client logic
+                                                    client = anthropic.Anthropic()
+                                                    message = client.messages.create(
+                                                        model="claude-opus-4-6",
+                                                        max_tokens=20,
+                                                        messages=[{"role": "user", "content": prompt}]
+                                                    )
+                                                    result = message.content[0].text.strip()
+                                                    
+                                                    # Validate AI response
+                                                    valid = ["Directly Related", "Moderately Related", "Slightly Related", "Not Related"]
+                                                    if result not in valid:
+                                                        # Fuzzy match
+                                                        result_lower = result.lower()
+                                                        if "directly" in result_lower:
+                                                            relevance = "Directly Related"
+                                                        elif "moderate" in result_lower:
+                                                            relevance = "Moderately Related"
+                                                        elif "slightly" in result_lower:
+                                                            relevance = "Slightly Related"
                                                         else:
-                                                            relevance = result
-                                                            
-                                                    except Exception as e:
-                                                        print(f"AI scan error: {e}")
-                                                        relevance = "Not Related"  # Fallback
-                                                
-                                                cursor.execute("""
-                                                    INSERT INTO alumni_employment
-                                                    (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, updated_by, date_updated)
-                                                    VALUES (%s,%s,%s,%s,%s,%s,%s)
-                                                """, (
-                                                    alumni.get('alumni_id'), employment_status, sector.strip() if sector else None, 
-                                                    job_title.strip(), relevance.strip() if relevance else None,
-                                                    "alumni_self_update", date.today()
-                                                ))
+                                                            relevance = "Not Related"
+                                                    else:
+                                                        relevance = result
+                                                        
+                                                except Exception as e:
+                                                    print(f"AI scan error: {e}")
+                                                    relevance = "Not Related"  # Fallback
+                                                    
+                                                    cursor.execute("""
+                                                        INSERT INTO alumni_employment
+                                                        (alumni_id, employment_status, employment_sector, job_title, degree_relevance_to_work, updated_by, date_updated)
+                                                        VALUES (%s,%s,%s,%s,%s,%s,%s)
+                                                    """, (
+                                                        alumni.get('alumni_id'), employment_status, sector.strip() if sector else None, 
+                                                        job_title.strip(), relevance.strip() if relevance else None,
+                                                        "alumni_self_update", date.today()
+                                                    ))
                                     else:
                                         # Create single employment record with no job details
                                         cursor.execute("""
@@ -4194,7 +4191,6 @@ def my_profile():
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax'):
         # Close database connection before returning JSON
         cursor.close()
-        db.close()
         # Return JSON response for AJAX requests
         return jsonify({
             'success': not error,
