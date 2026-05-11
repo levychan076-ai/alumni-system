@@ -3412,9 +3412,10 @@ def build_search_query(search, per_page=None, offset=None):
                 like  # degree_relevance_to_work
             ]
 
-    group_order = " GROUP BY a.alumni_id ORDER BY a.alumni_id ASC"
+    # Remove GROUP BY since we're selecting individual alumni records, not aggregating
+    order = " ORDER BY a.alumni_id ASC"
 
-    records_query = base_select + where + group_order
+    records_query = base_select + where + order
     count_query = count_select + where
 
     # attach pagination to records query only
@@ -3457,8 +3458,8 @@ def employment_summary():
     cursor.close()
     db.close()
 
-    labels = [r['label'] for r in rows]
-    counts = [r['count'] for r in rows]
+    labels = [r['status'] for r in rows]
+    counts = [r['total'] for r in rows]
 
     return jsonify({"labels": labels, "counts": counts})
 
@@ -3487,8 +3488,8 @@ def relevance_summary():
     cursor.close()
     db.close()
 
-    labels = [r['label'] for r in rows]
-    counts = [r['count'] for r in rows]
+    labels = [r['relevance'] for r in rows]
+    counts = [r['total'] for r in rows]
 
     return jsonify({"labels": labels, "counts": counts})
 
