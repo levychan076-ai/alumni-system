@@ -768,22 +768,48 @@ def records():
     offset = (page - 1) * per_page
     user_type = session.get("user_type")
 
-    db = get_db()
-    cursor = db.cursor()
+    try:
+        db = get_db()
+        cursor = db.cursor()
 
-    records_query, count_query, paginated_params, count_params = build_search_query(
-        search, per_page=per_page, offset=offset
-    )
+        records_query, count_query, paginated_params, count_params = build_search_query(
+            search, per_page=per_page, offset=offset
+        )
 
-    cursor.execute(records_query, tuple(paginated_params))
-    raw_records = cursor.fetchall()
+        # Debug logging for Railway
+        app.logger.info(f"Search query executed - Search: '{search}', Page: {page}")
+        app.logger.debug(f"Records query placeholders: {records_query.count('%s')}, Params: {len(paginated_params)}")
+        app.logger.debug(f"Count query placeholders: {count_query.count('%s')}, Params: {len(count_params)}")
 
-    cursor.execute(count_query, tuple(count_params))
-    result = cursor.fetchone()
-    total_records = result['COUNT(DISTINCT a.alumni_id)'] if result else 0
+        cursor.execute(records_query, tuple(paginated_params))
+        raw_records = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+        cursor.execute(count_query, tuple(count_params))
+        result = cursor.fetchone()
+        total_records = result['COUNT(DISTINCT a.alumni_id)'] if result else 0
+
+        cursor.close()
+        db.close()
+
+    except Exception as e:
+        app.logger.error(f"Error in /records route: {str(e)}")
+        app.logger.error(f"Search term: '{search}', Page: {page}")
+        app.logger.error(f"Records query: {records_query}")
+        app.logger.error(f"Records params: {paginated_params}")
+        app.logger.error(f"Count query: {count_query}")
+        app.logger.error(f"Count params: {count_params}")
+        
+        # Ensure database connection is closed on error
+        try:
+            cursor.close()
+            db.close()
+        except:
+            pass
+        
+        # Return error page with logging info
+        return render_template("error.html", 
+                               error="An error occurred while searching records. Please try again.",
+                               user_type=user_type), 500
 
     total_pages = max(1, (total_records + per_page - 1) // per_page)
     start_index = offset + 1
@@ -2668,18 +2694,39 @@ def resequence_alumni_ids():
 def export_records():
     search = request.args.get("search", "").strip()
     format_type = request.args.get("format", "csv")
+    user_type = session.get("user_type")
 
-    db = get_db()
-    cursor = db.cursor()
+    try:
+        db = get_db()
+        cursor = db.cursor()
 
-    # reuse the exact same search logic — no pagination
-    records_query, _, params, _ = build_search_query(search)
+        # reuse the exact same search logic — no pagination
+        records_query, _, params, _ = build_search_query(search)
 
-    cursor.execute(records_query, tuple(params))
-    data = cursor.fetchall()
+        # Debug logging for Railway
+        app.logger.info(f"Export records executed - Search: '{search}', Format: {format_type}")
+        app.logger.debug(f"Export query placeholders: {records_query.count('%s')}, Params: {len(params)}")
 
-    cursor.close()
-    db.close()
+        cursor.execute(records_query, tuple(params))
+        data = cursor.fetchall()
+
+        cursor.close()
+        db.close()
+
+    except Exception as e:
+        app.logger.error(f"Error in /export-records route: {str(e)}")
+        app.logger.error(f"Search term: '{search}', Format: {format_type}")
+        app.logger.error(f"Export query: {records_query}")
+        app.logger.error(f"Export params: {params}")
+        
+        # Ensure database connection is closed on error
+        try:
+            cursor.close()
+            db.close()
+        except:
+            pass
+        
+        return "An error occurred while exporting records. Please try again.", 500
 
     def safe(v):
         if v is None:
@@ -3415,7 +3462,7 @@ def build_search_query(search, per_page=None, offset=None):
                 like, like,  # program, major
                 like, like, like,  # job_title, emp_status, emp_sector
                 contact_like,  # contact (digits-only match)
-                like, like,  # graduation_date, admission_date
+                like,  # graduation_date
                 like  # degree_relevance_to_work
             ]
 
