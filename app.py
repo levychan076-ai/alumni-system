@@ -841,7 +841,12 @@ def records():
             row.get('employment_status', ''),  # [14]  employment_status
             row.get('job_title', ''),  # [15]  job_title
             row.get('employment_sector', ''),  # [16]  employment_sector
-            row.get('degree_relevance_to_work', ''),  # [17]  work relevance
+            row.get('company_name', ''),  # [17]  company_name
+            row.get('degree_relevance_to_work', ''),  # [18]  work relevance
+            row.get('civil_status', ''),  # [19]  civil_status
+            row.get('sex', ''),  # [20]  sex/gender
+            row.get('eligibility', ''),  # [21]  eligibility
+            row.get('alumni_status', ''),  # [22]  alumni status
         ))
 
     return render_template(
@@ -2737,19 +2742,20 @@ def export_records():
 
     headers = [
         "Student No", "Last Name", "First Name", "Middle Name",
-        "Address", "Email", "Contact",
-        "Program", "Major", "Admission Date", "Graduation Date",
-        "Employment Status", "Job Title", "Sector", "Degree Relevance",
+        "Address", "Email", "Contact", "Civil Status", "Sex/Gender", "Eligibility", "Status",
+        "Program", "Major", "Graduation Date",
+        "Employment Status", "Job Title", "Company", "Sector", "Degree Relevance",
         "Added By", "Date Added"
     ]
 
     def row_values(r):
         return [
-            safe(r[1]), safe(r[2]), safe(r[3]), safe(r[4]),
-            safe(r[5]), safe(r[6]), safe(r[7]),
-            safe(r[10]), safe(r[11]), safe(r[12]), safe(r[13]),
-            safe(r[14]), safe(r[15]), safe(r[16]), safe(r[17]),
-            safe(r[8]), safe(r[9])
+            safe(r[1]), safe(r[2]), safe(r[3]), safe(r[4]),  # Student No, Last, First, Middle
+            safe(r[5]), safe(r[6]), safe(r[7]), safe(r[8]), safe(r[9]),  # Address, Email, Contact, Civil, Sex
+            safe(r[10]), safe(r[11]),  # Eligibility, Status
+            safe(r[12]), safe(r[13]), safe(r[14]),  # Program, Major, Graduation Date
+            safe(r[15]), safe(r[16]), safe(r[17]), safe(r[18]), safe(r[19]),  # Employment Status, Job Title, Company, Sector, Degree Relevance
+            safe(r[20]), safe(r[21])  # Added By, Date Added
         ]
 
     # ================= CSV =================
@@ -3396,17 +3402,38 @@ def export_filtered_count():
 
 def build_search_query(search, per_page=None, offset=None):
     """
-    Unified search query used by BOTH /records (display) and /export-records (download).
+    Enhanced unified search query for comprehensive alumni record searching.
+    
+    Searches across ALL important alumni fields:
+    - Personal Info: alumni_id, stud_num, first_name, middle_name, last_name, full_name
+    - Contact: email, contact_num, address
+    - Academic: program, major, graduation_date (year)
+    - Employment: employment_status, job_title, employment_sector, company_name, degree_relevance_to_work
+    - Additional: civil_status, sex/gender, eligibility, status, added_by, date_added (year)
+    
+    Features:
+    - Case-insensitive partial matching using LIKE %keyword%
+    - Special handling for phone numbers (digits-only)
+    - Year-based search for graduation and date_added
+    - Optimized to avoid duplicate records using DISTINCT
+    - Compatible with PyMySQL and Railway MySQL strict mode
+    
     Returns (records_query, count_query, params, count_params)
     Pagination params are appended only when per_page/offset are given.
     """
 
     base_select = """
-        SELECT
+        SELECT DISTINCT
             a.alumni_id, a.stud_num, a.photo, a.last_name, a.first_name, a.middle_name,
             a.address, a.email, a.contact_num, a.added_by, a.date_added,
+            COALESCE(a.civil_status, '') as civil_status,
+            COALESCE(a.sex, '') as sex,
+            COALESCE(a.eligibility, '') as eligibility,
+            COALESCE(a.status, '') as alumni_status,
             d.program, d.major, d.graduation_date,
-            e.employment_status, e.job_title, e.employment_sector, e.degree_relevance_to_work
+            e.employment_status, e.job_title, e.employment_sector, 
+            COALESCE(e.company_name, '') as company_name,
+            e.degree_relevance_to_work
         FROM alumni_table a
         LEFT JOIN alumni_degree d ON a.alumni_id = d.alumni_id
         LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
@@ -3439,31 +3466,59 @@ def build_search_query(search, per_page=None, offset=None):
         else:
             where = """
                 WHERE (
+                    -- Personal Information Fields
                     LOWER(COALESCE(a.stud_num,          '')) LIKE %s OR
                     LOWER(COALESCE(a.first_name,        '')) LIKE %s OR
                     LOWER(COALESCE(a.middle_name,       '')) LIKE %s OR
                     LOWER(COALESCE(a.last_name,         '')) LIKE %s OR
+                    CONCAT_WS(' ', COALESCE(a.first_name, ''), COALESCE(a.middle_name, ''), COALESCE(a.last_name, '')) LIKE %s OR
+                    
+                    -- Contact Information Fields
                     LOWER(COALESCE(a.email,             '')) LIKE %s OR
                     LOWER(COALESCE(a.address,           '')) LIKE %s OR
+                    REPLACE(REPLACE(COALESCE(CAST(a.contact_num AS CHAR),''),' ',''),'-','') LIKE %s OR
+                    
+                    -- Academic Information Fields
                     LOWER(COALESCE(d.program,           '')) LIKE %s OR
                     LOWER(COALESCE(d.major,             '')) LIKE %s OR
-                    LOWER(COALESCE(e.job_title,         '')) LIKE %s OR
-                    LOWER(COALESCE(e.employment_status, '')) LIKE %s OR
-                    LOWER(COALESCE(e.employment_sector, '')) LIKE %s OR
-                    REPLACE(REPLACE(COALESCE(CAST(a.contact_num AS CHAR),''),' ',''),'-','') LIKE %s OR
                     CAST(d.graduation_date   AS CHAR) LIKE %s OR
-                    LOWER(COALESCE(e.degree_relevance_to_work, '')) LIKE %s
+                    YEAR(d.graduation_date) = %s OR
+                    
+                    -- Employment Information Fields
+                    LOWER(COALESCE(e.employment_status, '')) LIKE %s OR
+                    LOWER(COALESCE(e.job_title,         '')) LIKE %s OR
+                    LOWER(COALESCE(e.employment_sector, '')) LIKE %s OR
+                    LOWER(COALESCE(e.company_name,      '')) LIKE %s OR
+                    LOWER(COALESCE(e.degree_relevance_to_work, '')) LIKE %s OR
+                    
+                    -- Additional Alumni Fields
+                    LOWER(COALESCE(a.civil_status,      '')) LIKE %s OR
+                    LOWER(COALESCE(a.sex,               '')) LIKE %s OR
+                    LOWER(COALESCE(a.eligibility,        '')) LIKE %s OR
+                    LOWER(COALESCE(a.status,            '')) LIKE %s OR
+                    LOWER(COALESCE(a.added_by,          '')) LIKE %s OR
+                    YEAR(a.date_added) = %s
                 )
             """
             contact_like = f"%{search_contact}%" if search_contact else like
             params = [
-                like, like, like, like, like,  # stud_num, first, middle, last, email
-                like,  # address
-                like, like,  # program, major
-                like, like, like,  # job_title, emp_status, emp_sector
-                contact_like,  # contact (digits-only match)
-                like,  # graduation_date
-                like  # degree_relevance_to_work
+                # Personal Information
+                like, like, like, like, like,  # stud_num, first, middle, last, full_name
+                
+                # Contact Information  
+                like, like, contact_like,  # email, address, contact
+                
+                # Academic Information
+                like, like, like, search,  # program, major, graduation_date, graduation_year
+                
+                # Employment Information
+                like, like, like, like, like,  # emp_status, job_title, emp_sector, company_name, degree_relevance
+                
+                # Additional Fields
+                like, like, like, like, like,  # civil_status, sex, eligibility, status, added_by
+                
+                # Date Fields
+                search  # date_added year
             ]
 
     # Remove GROUP BY since we're selecting individual alumni records, not aggregating
