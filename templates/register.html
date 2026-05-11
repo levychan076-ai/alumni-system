@@ -573,6 +573,14 @@
                 </div>
 
                 <div class="field-group">
+                    <label class="field-label">Address <span class="req">*</span></label>
+                    <input type="text" name="address" class="field-input"
+                           placeholder="Enter your complete address"
+                           value="{{ alumni.address if alumni else '' }}"
+                           required>
+                </div>
+
+                <div class="field-group">
                     <label class="field-label">Password <span class="req">*</span></label>
                     <div class="pw-wrap">
                         <input type="password" name="password" id="pwInput" class="field-input"
