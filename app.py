@@ -3985,11 +3985,20 @@ def my_profile():
                         
                         # ---------- UPDATE ALUMNI RECORD ----------
                         if not error:
-                            cursor.execute("""
+                            # Get logged-in Alumni user's full name for added_by field
+                        alumni_fullname = session.get("alumni_fullname")
+                        if not alumni_fullname:
+                            # Fallback: construct from alumni record
+                            alumni_fullname = f"{alumni.get('first_name', '')} {alumni.get('last_name', '')}"
+                        
+                        # Use alumni's own name for added_by field
+                        added_by_name = alumni_fullname or f"{alumni.get('first_name', '')} {alumni.get('last_name', '')}"
+                        
+                        cursor.execute("""
                                 UPDATE alumni_table 
                                 SET stud_num = %s, last_name = %s, middle_name = %s, first_name = %s, 
                                     address = %s, email = %s, contact_num = %s, photo = %s,
-                                    updated_by = %s, date_updated = %s
+                                    added_by = %s, date_updated = %s
                                 WHERE alumni_id = %s
                             """, (
                                 stud_num,
@@ -4000,7 +4009,7 @@ def my_profile():
                                 email,
                                 contact,
                                 new_photo,
-                                "alumni_self_update",
+                                added_by_name,
                                 date.today(),
                                 alumni.get('alumni_id')
                             ))
