@@ -786,7 +786,7 @@ def records():
 
         cursor.execute(count_query, tuple(count_params))
         result = cursor.fetchone()
-        total_records = result['COUNT(DISTINCT a.alumni_id)'] if result else 0
+        total_records = result['total_count'] if result else 0
 
         cursor.close()
         db.close()
@@ -841,12 +841,7 @@ def records():
             row.get('employment_status', ''),  # [14]  employment_status
             row.get('job_title', ''),  # [15]  job_title
             row.get('employment_sector', ''),  # [16]  employment_sector
-            row.get('company_name', ''),  # [17]  company_name
-            row.get('degree_relevance_to_work', ''),  # [18]  work relevance
-            row.get('civil_status', ''),  # [19]  civil_status
-            row.get('sex', ''),  # [20]  sex/gender
-            row.get('eligibility', ''),  # [21]  eligibility
-            row.get('alumni_status', ''),  # [22]  alumni status
+            row.get('degree_relevance_to_work', ''),  # [17]  work relevance
         ))
 
     return render_template(
@@ -2742,20 +2737,19 @@ def export_records():
 
     headers = [
         "Student No", "Last Name", "First Name", "Middle Name",
-        "Address", "Email", "Contact", "Civil Status", "Sex/Gender", "Eligibility", "Status",
+        "Address", "Email", "Contact",
         "Program", "Major", "Graduation Date",
-        "Employment Status", "Job Title", "Company", "Sector", "Degree Relevance",
+        "Employment Status", "Job Title", "Sector", "Degree Relevance",
         "Added By", "Date Added"
     ]
 
     def row_values(r):
         return [
             safe(r[1]), safe(r[2]), safe(r[3]), safe(r[4]),  # Student No, Last, First, Middle
-            safe(r[5]), safe(r[6]), safe(r[7]), safe(r[8]), safe(r[9]),  # Address, Email, Contact, Civil, Sex
-            safe(r[10]), safe(r[11]),  # Eligibility, Status
-            safe(r[12]), safe(r[13]), safe(r[14]),  # Program, Major, Graduation Date
-            safe(r[15]), safe(r[16]), safe(r[17]), safe(r[18]), safe(r[19]),  # Employment Status, Job Title, Company, Sector, Degree Relevance
-            safe(r[20]), safe(r[21])  # Added By, Date Added
+            safe(r[5]), safe(r[6]), safe(r[7]),  # Address, Email, Contact
+            safe(r[8]), safe(r[9]), safe(r[10]),  # Program, Major, Graduation Date
+            safe(r[11]), safe(r[12]), safe(r[13]), safe(r[14]),  # Employment Status, Job Title, Sector, Degree Relevance
+            safe(r[15]), safe(r[16])  # Added By, Date Added
         ]
 
     # ================= CSV =================
@@ -3426,13 +3420,8 @@ def build_search_query(search, per_page=None, offset=None):
         SELECT DISTINCT
             a.alumni_id, a.stud_num, a.photo, a.last_name, a.first_name, a.middle_name,
             a.address, a.email, a.contact_num, a.added_by, a.date_added,
-            COALESCE(a.civil_status, '') as civil_status,
-            COALESCE(a.sex, '') as sex,
-            COALESCE(a.eligibility, '') as eligibility,
-            COALESCE(a.status, '') as alumni_status,
             d.program, d.major, d.graduation_date,
             e.employment_status, e.job_title, e.employment_sector, 
-            COALESCE(e.company_name, '') as company_name,
             e.degree_relevance_to_work
         FROM alumni_table a
         LEFT JOIN alumni_degree d ON a.alumni_id = d.alumni_id
@@ -3440,7 +3429,7 @@ def build_search_query(search, per_page=None, offset=None):
     """
 
     count_select = """
-        SELECT COUNT(DISTINCT a.alumni_id)
+        SELECT COUNT(DISTINCT a.alumni_id) as total_count
         FROM alumni_table a
         LEFT JOIN alumni_degree d ON a.alumni_id = d.alumni_id
         LEFT JOIN alumni_employment e ON a.alumni_id = e.alumni_id
@@ -3471,7 +3460,7 @@ def build_search_query(search, per_page=None, offset=None):
                     LOWER(COALESCE(a.first_name,        '')) LIKE %s OR
                     LOWER(COALESCE(a.middle_name,       '')) LIKE %s OR
                     LOWER(COALESCE(a.last_name,         '')) LIKE %s OR
-                    CONCAT_WS(' ', COALESCE(a.first_name, ''), COALESCE(a.middle_name, ''), COALESCE(a.last_name, '')) LIKE %s OR
+                    LOWER(CONCAT_WS(' ', COALESCE(a.first_name, ''), COALESCE(a.middle_name, ''), COALESCE(a.last_name, ''))) LIKE %s OR
                     
                     -- Contact Information Fields
                     LOWER(COALESCE(a.email,             '')) LIKE %s OR
@@ -3488,14 +3477,9 @@ def build_search_query(search, per_page=None, offset=None):
                     LOWER(COALESCE(e.employment_status, '')) LIKE %s OR
                     LOWER(COALESCE(e.job_title,         '')) LIKE %s OR
                     LOWER(COALESCE(e.employment_sector, '')) LIKE %s OR
-                    LOWER(COALESCE(e.company_name,      '')) LIKE %s OR
                     LOWER(COALESCE(e.degree_relevance_to_work, '')) LIKE %s OR
                     
-                    -- Additional Alumni Fields
-                    LOWER(COALESCE(a.civil_status,      '')) LIKE %s OR
-                    LOWER(COALESCE(a.sex,               '')) LIKE %s OR
-                    LOWER(COALESCE(a.eligibility,        '')) LIKE %s OR
-                    LOWER(COALESCE(a.status,            '')) LIKE %s OR
+                    -- Additional Fields
                     LOWER(COALESCE(a.added_by,          '')) LIKE %s OR
                     YEAR(a.date_added) = %s
                 )
@@ -3512,13 +3496,10 @@ def build_search_query(search, per_page=None, offset=None):
                 like, like, like, search,  # program, major, graduation_date, graduation_year
                 
                 # Employment Information
-                like, like, like, like, like,  # emp_status, job_title, emp_sector, company_name, degree_relevance
+                like, like, like, like,  # emp_status, job_title, emp_sector, degree_relevance
                 
                 # Additional Fields
-                like, like, like, like, like,  # civil_status, sex, eligibility, status, added_by
-                
-                # Date Fields
-                search  # date_added year
+                like, search  # added_by, date_added year
             ]
 
     # Remove GROUP BY since we're selecting individual alumni records, not aggregating
