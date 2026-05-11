@@ -1229,6 +1229,9 @@ def announcement():
                         error = "No valid email recipients found."
 
         except Exception as e:
+            app.logger.error(f"Error in Alumni Coordinator Add Alumni: {str(e)}")
+            app.logger.error(f"Student number: {stud_num}")
+            app.logger.error(f"User: {session.get('username')}")
             error = str(e)
 
     # ================= GET REQUESTS (FOR Admin) =================
@@ -3680,19 +3683,10 @@ def register():
                     )
                     if cursor.fetchone():
                         error = "An account with this email already exists."
-                    else:
-                        # Generate student number
-                        stud_num = f"TAL-{datetime.now().year}-{str(int(time.time()) % 100000).zfill(5)}"
-                        
-                        cursor.execute("""
-                            INSERT INTO alumni_table
-                            (stud_num, last_name, first_name, middle_name, email, alumni_password, address, contact_num, photo, added_by, date_added)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """, (stud_num, lname, fname, mname, email, password, address, contact_num, photo_filename, 'alumni_self_service', date.today()))
-                        
-                        db.commit()
-                        success = "Account created successfully! You can now log in as Alumni."
                 except Exception as e:
+                    app.logger.error(f"Error in alumni self-registration: {str(e)}")
+                    app.logger.error(f"Email: {email}")
+                    app.logger.error(f"Student number: {stud_num}")
                     import traceback
                     print("ERROR - Registration failed:", str(e))
                     traceback.print_exc()
@@ -3885,24 +3879,30 @@ def my_profile():
                     # Get student number from form or generate if not provided
                     stud_num = request.form.get("stud_num", "").strip()
                     if not stud_num:
-                        stud_num = f"TAL-{datetime.now().year}-{str(session.get('alumni_id')).zfill(5)}"
-                    
+                        # Generate student number
+                        stud_num = f"TAL-{datetime.now().year}-{str(int(time.time()) % 100000).zfill(5)}"
+                        
+                    lname = request.form.get("last_name", "").strip()
+                    fname = request.form.get("first_name", "").strip()
+                    mname = request.form.get("middle_name", "").strip()
+                    email = request.form.get("email", "").strip()
+                    address = request.form.get("address", "").strip()
+                    contact_num = re.sub(r"\D", "", request.form.get("contact_num", ""))
+                    photo_filename = new_photo
+                    password = request.form.get("password", "")
+
                     cursor.execute("""
                         INSERT INTO alumni_table
-                        (stud_num, last_name, middle_name, first_name, address, email, contact_num, photo, added_by, date_added)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    """, (
-                        stud_num,
-                        alumni['last_name'],
-                        alumni.get('middle_name', ''),
-                        alumni['first_name'],
-                        request.form.get("address"),
-                        alumni['email'],
-                        contact,
-                        new_photo,
-                        "alumni_self_service",
-                        date.today()
-                    ))
+                        (stud_num, last_name, first_name, middle_name, email, alumni_password, address, contact_num, photo, added_by, date_added)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (stud_num, lname, fname, mname, email, password, address, contact_num, photo_filename, 'alumni_self_service', date.today()))
+                    
+                    cursor.execute("""
+                        INSERT INTO alumni_account
+                        (stud_num, alumni_password)
+                        VALUES (%s, %s)
+                    """, (stud_num, password))
+                    
                     alumni_id = cursor.lastrowid
                     
                     # ---------- DEGREE ----------
