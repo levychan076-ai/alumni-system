@@ -95,17 +95,14 @@ def test_database():
         cursor.close()
         db.close()
         return True
-    try:
+    except Exception as e:
+        print(f"ERROR in test_database(): {str(e)}")
+        if 'cursor' in locals():
             cursor.close()
+        if 'db' in locals():
             db.close()
-        except:
-            pass
-        raise e
-        import traceback
-        print("ERROR in get_db():", str(e))
-        traceback.print_exc()
-        return None
-
+        return False
+    
 from functools import wraps
 from flask import redirect, session, request
 
@@ -296,12 +293,7 @@ def delete_photo(filename):
     try:
         if os.path.exists(path):
             os.remove(path)
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         print("Photo delete error:", e)
 
 
@@ -351,13 +343,7 @@ def scan_relevance():
                 result = "Not Related"
 
         return jsonify({"relevance": result})
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         print("AI scan error:", e)
         return jsonify({"relevance": "Not Related", "error": str(e)}), 200
 
@@ -397,13 +383,7 @@ def test_login():
             return f"Found user: {user['username']} with type: {user['user_type']}"
         else:
             return f"No user found with username='{test_username}' and password='{test_password}'"
-            
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         return f"Query error: {e}"
     finally:
         cursor.close()
@@ -468,13 +448,7 @@ def login_admin():
 
             print(f"DEBUG - No user found or invalid credentials")
             return render_template("login_admin.html", error="Invalid username or password.")
-
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+        except Exception as e:
             import traceback
             print("ERROR - Login failed:", str(e))
             traceback.print_exc()
@@ -509,13 +483,7 @@ def login_alumni():
 
             alumni_user = cursor.fetchone()
             print(f"DEBUG - Database query result: {alumni_user}")
-            
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+        except Exception as e:
             import traceback
             print("ERROR - Alumni login failed:", str(e))
             traceback.print_exc()
@@ -605,13 +573,7 @@ def login():
 
             print(f"DEBUG - No user found or invalid credentials")
             return render_template("login.html", error="Invalid username or password.")
-
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+        except Exception as e:
             import traceback
             print("ERROR - Original login failed:", str(e))
             traceback.print_exc()
@@ -737,13 +699,7 @@ def dashboard():
         cursor.execute("SELECT COUNT(*) as pending FROM alumni_notifications WHERE status = 'pending'")
         result = cursor.fetchone()
         pending_requests = result['pending'] if result else 0
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         import traceback
         print("ERROR - Dashboard error:", str(e))
         traceback.print_exc()
@@ -830,13 +786,7 @@ def records():
 
         cursor.close()
         db.close()
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         app.logger.error(f"Error in /records route: {str(e)}")
         app.logger.error(f"Search term: '{search}', Page: {page}")
         app.logger.error(f"Records query: {records_query}")
@@ -1051,19 +1001,12 @@ def add():
             return redirect(url_for('records', success='alumni_added'))
 
         return render_template("add.html", programs=programs, user_type=session.get("user_type"), now=datetime.now())
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         import traceback
         print("ERROR - Add alumni failed:", str(e))
         traceback.print_exc()
         db.rollback()
         return render_template("add.html", programs=programs, error=str(e), user_type=session.get("user_type"), now=datetime.now())
-
     finally:
         if cursor:
             cursor.close()
@@ -1147,13 +1090,7 @@ def activity():
         """)
         
         logs = cursor.fetchall()
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         import traceback
         print("ERROR - Activity logs failed:", str(e))
         traceback.print_exc()
@@ -1182,13 +1119,7 @@ def announcement():
 
         search = request.args.get("search", "").strip()
         selected_ids = request.args.getlist("selected_alumni")
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         app.logger.error(f"Database connection error in /announcement route: {str(e)}")
         return render_template("error.html", 
                            error="Database connection error. Please try again.",
@@ -1295,13 +1226,7 @@ def announcement():
                         success = f"Announcement request submitted for approval to {len(recipients)} alumni."
                     else:
                         error = "No valid email recipients found."
-
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+        except Exception as e:
             app.logger.error(f"Error in Alumni Coordinator Add Alumni: {str(e)}")
             app.logger.error(f"Student number: {stud_num}")
             app.logger.error(f"User: {session.get('username')}")
@@ -1338,13 +1263,7 @@ def announcement():
                 LIMIT 20
             """)
             rejected_history = cursor.fetchall()
-            
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+        except Exception as e:
             import traceback
             print("ERROR - Announcement failed:", str(e))
             traceback.print_exc()
@@ -1492,13 +1411,7 @@ def announcement():
             LIMIT 10
         """, (session.get("username"),))
         my_requests = cursor.fetchall()
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         app.logger.error(f"Error executing alumni query in /announcement route: {str(e)}")
         app.logger.error(f"Query: {query}")
         app.logger.error(f"Params: {params}")
@@ -1809,19 +1722,12 @@ def update(alumni_id):
             user_type=session.get("user_type"),
             now=datetime.now()
         )
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         import traceback
         print("ERROR - Update alumni failed:", str(e))
         traceback.print_exc()
         db.rollback()
         return str(e)
-
     finally:
         cursor.close()
         db.close()
@@ -1891,12 +1797,7 @@ def archive(alumni_id):
 
         try:
             resequence_alumni_ids()
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+        except Exception as e:
             print("Resequence warning:", e)
 
         full_name = f"{r.get('last_name')}, {r.get('first_name')}"
@@ -1910,13 +1811,7 @@ def archive(alumni_id):
 
         # For regular form submission, redirect back to records
         return redirect(url_for('records'))
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         import traceback
         print("ERROR - Archive failed:", str(e))
         traceback.print_exc()
@@ -1924,7 +1819,6 @@ def archive(alumni_id):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"success": False, "error": str(e)})
         return f"Archive error: {str(e)}"
-
     finally:
         cursor.close()
         db.close()
@@ -2052,13 +1946,7 @@ def parse_file(file_path):
         df = df.dropna(how='all')
         
         return df, None
-    
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         return None, f"Error parsing file: {str(e)}"
 
 def validate_import_data(df):
@@ -2210,13 +2098,7 @@ def import_alumni():
             "warnings": warnings,
             "file_path": file_path
         })
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         return jsonify({"success": False, "error": f"Error processing file: {str(e)}"}), 500
 
 @app.route("/confirm-import", methods=["POST"])
@@ -2322,13 +2204,7 @@ def confirm_import():
                 
                 db.commit()
                 imported_count += 1
-                
-            try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+            except Exception as e:
                 db.rollback()
                 import_errors.append(f"Record {i+1}: {str(e)}")
         
@@ -2346,15 +2222,8 @@ def confirm_import():
             "import_errors": import_errors,
             "warnings": warnings
         })
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         return jsonify({"success": False, "error": f"Import failed: {str(e)}"}), 500
-
     finally:
         if cursor:
             cursor.close()
@@ -2421,13 +2290,7 @@ def download_import_template():
             download_name='alumni_import_template.xlsx',
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         return f"Error generating template: {str(e)}", 500
 
 
@@ -2488,13 +2351,7 @@ def combined_graduates():
         db.close()
         
         return {"labels": all_years, "datasets": datasets}
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         print("Combined graduates error:", e)
         cursor.close()
         db.close()
@@ -2683,13 +2540,7 @@ def save_user_public():
                     
                     db.commit()
                     success = "Account created successfully! You can now log in."
-                    
-            try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+            except Exception as e:
                 import traceback
                 print("ERROR - Save user public failed:", str(e))
                 traceback.print_exc()
@@ -2761,13 +2612,7 @@ def save_user():
         log_activity(f"Created user {request.form.get('username')}")
 
         return redirect("/create-user")
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         import traceback
         print("ERROR - Save user failed:", str(e))
         traceback.print_exc()
@@ -2857,16 +2702,9 @@ def resequence_alumni_ids():
 
         cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
         db.commit()
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         db.rollback()
         print("Resequence error:", e)
-
     finally:
         cursor.close()
         db.close()
@@ -2895,13 +2733,7 @@ def export_records():
 
         cursor.close()
         db.close()
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         app.logger.error(f"Error in /export-records route: {str(e)}")
         app.logger.error(f"Search term: '{search}', Format: {format_type}")
         app.logger.error(f"Export query: {records_query}")
@@ -3126,16 +2958,9 @@ def resequence_alumni_ids():
         cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
 
         db.commit()
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         db.rollback()
         print("Resequence error:", e)
-
     finally:
         cursor.close()
         db.close()
@@ -3195,20 +3020,12 @@ def log_activity(activity):
         ))
 
         db.commit()
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         print("Activity log error:", e)
         db.rollback()
-
     finally:
         cursor.close()
         db.close()
-
 
 
 
@@ -3843,12 +3660,7 @@ def register():
                     )
                     if cursor.fetchone():
                         error = "An account with this email already exists."
-                try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+                except Exception as e:
                     app.logger.error(f"Error in alumni self-registration: {str(e)}")
                     app.logger.error(f"Email: {email}")
                     app.logger.error(f"Student number: {stud_num}")
@@ -3889,13 +3701,7 @@ def my_profile():
         # Get alumni info using alumni_id from session
         cursor.execute("SELECT * FROM alumni_table WHERE alumni_id=%s", (session.get("alumni_id"),))
         alumni = cursor.fetchone()
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         cursor.close()
         db.close()
         return render_template(
@@ -4179,13 +3985,7 @@ def my_profile():
                                                 relevance = "Not Related"
                                         else:
                                             relevance = result
-
-                                    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+                                    except Exception as e:
                                         print(f"AI scan error: {e}")
                                         relevance = "Not Related"  # Fallback
 
@@ -4413,13 +4213,7 @@ def my_profile():
                                                             relevance = "Not Related"
                                                     else:
                                                         relevance = result
-                                                        
-                                                try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+                                                except Exception as e:
                                                     print(f"AI scan error: {e}")
                                                     relevance = "Not Related"  # Fallback
                                                     
@@ -4477,13 +4271,7 @@ def my_profile():
                                 if alumni.get('middle_name') and alumni.get('middle_name').strip():
                                     full_name += f" {alumni.get('middle_name')[0]}."
                                 session['alumni_fullname'] = full_name
-
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+        except Exception as e:
             db.rollback()
             error = str(e)
 
@@ -4647,16 +4435,9 @@ def request_update():
         log_activity("Sent update request")
 
         return jsonify({"success": True})
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         db.rollback()
         return jsonify({"success": False, "error": str(e)})
-
     finally:
         cursor.close()
         db.close()
@@ -4784,17 +4565,10 @@ def resolve_update_request():
         log_activity(f"{'Approved' if action == 'approved' else 'Rejected'} alumni update request #{req_id}")
 
         return jsonify({"success": True})
-
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         db.rollback()
         print(f"Error in resolve_update_request: {str(e)}")  # Debug output
         return jsonify({"success": False, "error": str(e)})
-
     finally:
         cursor.close()
         db.close()
@@ -4915,13 +4689,7 @@ def report_statistics():
         cursor.close()
         db.close()
         return jsonify(stats)
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         print("Report statistics error:", e)
         cursor.close()
         db.close()
@@ -5094,13 +4862,7 @@ def generate_report(report_type):
         cursor.close()
         db.close()
         return jsonify(data)
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         print(f"Generate report error for {report_type}:", e)
         cursor.close()
         db.close()
@@ -5120,12 +4882,7 @@ def export_pdf(report_type):
             download_name=f"{report_type}_report_{datetime.now().strftime('%Y%m%d')}.pdf",
             mimetype='application/pdf'
         )
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
@@ -5142,12 +4899,7 @@ def export_excel(report_type):
             download_name=f"{report_type}_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
@@ -5241,12 +4993,7 @@ def generate_pdf_report(report_type):
         
         cursor.close()
         db.close()
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         cursor.close()
         db.close()
         raise e
@@ -5298,19 +5045,6 @@ def generate_pdf_report(report_type):
     doc.build(elements, onFirstPage=draw_layout, onLaterPages=draw_layout)
     buffer.seek(0)
     return buffer
-    
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
-        try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
 
 
 def generate_excel_report(report_type):
@@ -5403,12 +5137,7 @@ def generate_excel_report(report_type):
         
         cursor.close()
         db.close()
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
         cursor.close()
         db.close()
         raise e
@@ -5630,13 +5359,9 @@ def add_program_major():
             "success": True, 
             "message": f"Program and {majors_added} major(s) added successfully"
         })
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
+        cursor.close()
+        db.close()
         return jsonify({"success": False, "message": str(e)})
 
 
@@ -5658,13 +5383,9 @@ def get_programs():
         db.close()
         
         return jsonify({"programs": programs})
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
+        cursor.close()
+        db.close()
         return jsonify({"error": str(e)}), 500
 
 
@@ -5688,13 +5409,9 @@ def get_majors(program_name):
         db.close()
         
         return jsonify({"majors": majors})
-        
-    try:
-            cursor.close()
-            db.close()
-        except:
-            pass
-        raise e
+    except Exception as e:
+        cursor.close()
+        db.close()
         return jsonify({"error": str(e)}), 500
 
 
