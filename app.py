@@ -747,8 +747,15 @@ def dashboard():
 @login_required
 def logout():
     log_activity("Logged out")
+    user_type = session.get("user_type", "")
     session.clear()
-    return redirect("/")
+    
+    # Role-based redirect after logout
+    if user_type == "Alumni":
+        return redirect("/login-alumni")
+    else:
+        # Admin or Alumni Coordinator
+        return redirect("/")
 
 # ================= para sa records =================
 @app.route("/records")
