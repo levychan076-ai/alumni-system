@@ -1002,9 +1002,6 @@ def add():
             db.commit()
             log_activity(f"Added alumni {full_name}")
             
-            cursor.close()
-            db.close()
-            
             # Redirect to records with success parameter
             return redirect(url_for('records', success='alumni_added'))
 
@@ -1018,8 +1015,10 @@ def add():
         return render_template("add.html", programs=programs, error=str(e), user_type=session.get("user_type"), now=datetime.now())
 
     finally:
-        cursor.close()
-        db.close()
+        if cursor:
+            cursor.close()
+        if db and db.open:
+            db.close()
 
 
 # ================= pangtingin ng educ info =================
